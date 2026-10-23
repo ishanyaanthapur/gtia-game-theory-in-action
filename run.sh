@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # One-command start: creates .venv if needed, installs deps, starts the game at http://127.0.0.1:8000
+# Options: PORT=8080 ./run.sh (other port), NO_BROWSER=1 ./run.sh (don't auto-open), PYTHON=python3.12 ./run.sh
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -15,6 +16,10 @@ fi
 .venv/bin/pip install -q --upgrade pip
 .venv/bin/pip install -q -r requirements.txt
 
-echo "GTiA running at http://127.0.0.1:8000"
-( sleep 2 && (open http://127.0.0.1:8000 2>/dev/null || xdg-open http://127.0.0.1:8000 2>/dev/null || true) ) &
-exec .venv/bin/uvicorn backend.main:app --host 127.0.0.1 --port 8000
+PORT=${PORT:-8000}
+URL="http://127.0.0.1:$PORT"
+echo "GTiA running at $URL  (Ctrl+C to stop)"
+if [ -z "${NO_BROWSER:-}" ]; then
+  ( sleep 2 && (open "$URL" 2>/dev/null || xdg-open "$URL" 2>/dev/null || true) ) &
+fi
+exec .venv/bin/uvicorn backend.main:app --host 127.0.0.1 --port "$PORT"
