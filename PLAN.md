@@ -301,3 +301,15 @@ tokens. The token meter shows about 37K input for a browser game with one cop ch
 - The fresh-clone test.
 - Its own GitHub repo.
 - Screenshots for the report.
+
+---
+
+## 10. Repo + fresh-clone test (Oct 23)
+- **Repo:** private, https://github.com/ishanyaanthapur/gtia-game-theory-in-action. zlisto has been
+  invited as a collaborator (personal repos only allow the write role) and has to accept the invite.
+- **Fresh-clone test:**
+  - Cloned to an empty folder, then `cp .env.example .env` plus the key.
+  - `./run.sh` on the default python3 (3.14.7) had the server up about 50 s after the clone.
+  - The clone served the built frontend, and a full real game over HTTP reached `complete`:
+    20 agent runs, 31.0K input, 0 cached, and 1.7K output tokens.
+  - A fifth move was rejected with 409, and the `/../.env` probe returned the app page, not the file.

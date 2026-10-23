@@ -16,6 +16,9 @@ cp .env.example .env        # then paste your PORTKEY_API_KEY into .env
 ./run.sh                    # creates .venv, installs deps, opens http://127.0.0.1:8000
 ```
 
+Tested from a fresh clone on macOS with Python 3.14: about 50 seconds from `git clone` to a running
+game. Options: `PORT=8080 ./run.sh`, `NO_BROWSER=1 ./run.sh`.
+
 The app looks for `.env` in this folder first, then one folder up. It uses only `gpt-6-luna`
 through Portkey.
 
