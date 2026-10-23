@@ -23,7 +23,7 @@ export const AVATARS: Record<AvatarId, AvatarStyle> = {
     id: "yoshi",
     name: "Yoshi",
     species: "Tabby cat samurai",
-    blurb: "Brains and brawn. Out-thinks you, then out-lifts you.",
+    blurb: "Curious as a cat, strong as a tiger. Nine lives, zero wasted moves, and always lands on its feet.",
     traits: ["🧠 Smart", "💪 Strong"],
     fur: "#f28c28",
     muzzle: "#fff7ed",

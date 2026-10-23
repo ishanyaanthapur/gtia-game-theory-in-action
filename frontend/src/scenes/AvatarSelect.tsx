@@ -57,8 +57,8 @@ export function AvatarSelect({ onPick }: { onPick: (a: AvatarId) => void }) {
       </header>
 
       <div className="select-stage" onWheel={onWheel}>
-        <Canvas shadows camera={{ position: [0, 1.35, RADIUS + 3.6], fov: 38 }}>
-          <CameraAim target={[0, 0.85, RADIUS - 0.4]} />
+        <Canvas shadows camera={{ position: [0, 1.45, RADIUS + 5.0], fov: 38 }}>
+          <CameraAim target={[0, 1.32, RADIUS - 0.4]} />
           <color attach="background" args={["#0b0614"]} />
           <ambientLight intensity={0.55} />
           <directionalLight position={[3, 5, 6]} intensity={1.4} castShadow />
@@ -69,15 +69,16 @@ export function AvatarSelect({ onPick }: { onPick: (a: AvatarId) => void }) {
         </Canvas>
         <button className="carousel-arrow left" aria-label="Previous character" onClick={() => go(-1)}>‹</button>
         <button className="carousel-arrow right" aria-label="Next character" onClick={() => go(1)}>›</button>
-        <div className="spotlight-card" style={{ ["--accent" as string]: a.armor }}>
-          <strong>{a.name}</strong>
-          <span>{a.species}</span>
+        {/* keyed so it re-animates every time you scroll to a new character */}
+        <div key={current} className="spotlight-head" style={{ ["--accent" as string]: a.armor }}>
+          <h2>{a.name}</h2>
+          <span className="species">{a.species}</span>
           <div className="traits">
             {a.traits.map((t) => (
               <span key={t} className="trait">{t}</span>
             ))}
           </div>
-          <em>{a.blurb}</em>
+          <p>{a.blurb}</p>
         </div>
       </div>
 

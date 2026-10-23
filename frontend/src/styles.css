@@ -62,14 +62,19 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 }
 .carousel-arrow:hover { border-color: var(--purple-bright); box-shadow: 0 0 18px rgba(168, 85, 247, 0.5); }
 .carousel-arrow.left { left: 14px; } .carousel-arrow.right { right: 14px; }
-.spotlight-card {
-  position: absolute; left: 18px; bottom: 18px; max-width: 280px; background: var(--panel); backdrop-filter: blur(8px);
-  border: 1px solid var(--accent); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 5px;
-  box-shadow: 0 0 24px color-mix(in srgb, var(--accent) 35%, transparent);
+.spotlight-head {
+  position: absolute; top: 14px; left: 50%; transform: translateX(-50%); width: min(620px, 88%);
+  text-align: center; pointer-events: none; animation: headIn 0.35s ease-out;
 }
-.spotlight-card strong { font-size: 1.3rem; color: var(--accent); }
-.spotlight-card > span { font-size: 0.88rem; }
-.spotlight-card em { color: var(--muted); font-size: 0.84rem; }
+.spotlight-head h2 {
+  margin: 0; font-size: 2.6rem; line-height: 1.05; color: var(--accent);
+  text-shadow: 0 0 28px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.spotlight-head .species { display: block; font-size: 1.15rem; margin-top: 2px; color: var(--text); }
+.spotlight-head .traits { justify-content: center; margin: 10px 0 8px; }
+.spotlight-head .trait { font-size: 0.98rem; padding: 4px 12px; }
+.spotlight-head p { margin: 0; color: var(--muted); font-size: 1.02rem; font-style: italic; }
+@keyframes headIn { from { opacity: 0; transform: translate(-50%, -8px); } }
 .traits { display: flex; flex-wrap: wrap; gap: 6px; }
 .trait {
   font-size: 0.78rem; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--accent);
