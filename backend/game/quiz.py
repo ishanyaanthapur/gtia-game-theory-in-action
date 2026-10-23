@@ -1,0 +1,98 @@
+"""Before/after understanding check (pre-test / post-test) for the Impact section.
+
+The same 5 questions are asked before Door 1 and after the debrief. The change in score is the
+learning gain. Graded in code; no LLM calls, no token cost.
+"""
+from __future__ import annotations
+
+from pydantic import BaseModel
+
+SCENARIO = (
+    "You and a partner are arrested and questioned in separate rooms. Each of you can STAY SILENT or "
+    "CONFESS. If you confess and your partner stays silent, you go free (0 years) and they get 3 years "
+    "(and vice versa). If you both stay silent, you each get 1 year. If you both confess, you each get 2 years."
+)
+
+
+class Question(BaseModel):
+    id: str
+    concept: str
+    prompt: str
+    options: list[str]
+    answer: int  # index into options; never sent to the browser before grading
+    explanation: str
+
+
+QUESTIONS: list[Question] = [
+    Question(
+        id="q1_silent_partner",
+        concept="Best response",
+        prompt="If your partner STAYS SILENT, what is better for you?",
+        options=["Stay silent (1 year)", "Confess (0 years)", "It makes no difference"],
+        answer=1,
+        explanation="0 years beats 1 year, so confessing is better when your partner stays silent.",
+    ),
+    Question(
+        id="q2_confess_partner",
+        concept="Best response",
+        prompt="If your partner CONFESSES, what is better for you?",
+        options=["Confess (2 years)", "Stay silent (3 years)", "It makes no difference"],
+        answer=0,
+        explanation="2 years beats 3 years, so confessing is better when your partner confesses too.",
+    ),
+    Question(
+        id="q3_dominant",
+        concept="Dominant strategy",
+        prompt="What is a dominant strategy?",
+        options=[
+            "The strategy that gives both players the best total outcome",
+            "The strategy the other player is most likely to choose",
+            "Always cooperating with your partner",
+            "A strategy that is best for you no matter what the other player does",
+        ],
+        answer=3,
+        explanation="A dominant strategy beats your other options whatever the other player does. Here, that's confessing.",
+    ),
+    Question(
+        id="q4_nash",
+        concept="Nash equilibrium",
+        prompt="Which outcome is the Nash equilibrium (where neither player wants to change their choice alone)?",
+        options=["Both stay silent", "One confesses, one stays silent", "Both confess", "There isn't one"],
+        answer=2,
+        explanation="At (Confess, Confess), switching to silent alone would raise your sentence from 2 to 3, so no one wants to move.",
+    ),
+    Question(
+        id="q5_dilemma",
+        concept="Why it's a dilemma",
+        prompt="Why is the Prisoner's Dilemma called a 'dilemma'?",
+        options=[
+            "Each player's individually best choice leads to an outcome that is worse for both than cooperating",
+            "The players can't talk, so they have to guess randomly",
+            "The police always win no matter what",
+            "There is no best strategy for either player",
+        ],
+        answer=0,
+        explanation="Both confessing (2, 2) is stable, yet both staying silent (1, 1) would be better for both.",
+    ),
+]
+
+
+def public_questions() -> list[dict]:
+    """Questions as sent to the browser (no answers or explanations)."""
+    return [q.model_dump(include={"id", "concept", "prompt", "options"}) for q in QUESTIONS]
+
+
+def grade(answers: list[int | None]) -> tuple[int, list[dict]]:
+    results = []
+    for q, a in zip(QUESTIONS, answers, strict=True):
+        results.append(
+            {
+                "id": q.id,
+                "concept": q.concept,
+                "chosen": a,
+                "answer": q.answer,
+                "correct": a == q.answer,
+                "explanation": q.explanation,
+            }
+        )
+    return sum(r["correct"] for r in results), results

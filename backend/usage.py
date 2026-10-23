@@ -12,6 +12,7 @@ from backend.config import OUTPUT_DIR
 
 TOKEN_LOG = OUTPUT_DIR / "token_log.jsonl"
 AUDIT_LOG = OUTPUT_DIR / "audit_trail.jsonl"
+STUDY_LOG = OUTPUT_DIR / "user_study.jsonl"
 
 
 def _now() -> str:
@@ -56,3 +57,19 @@ def session_totals(session_id: str) -> dict[str, int]:
         for k in ("requests", "input_tokens", "cached_input_tokens", "output_tokens"):
             totals[k] += rec[k]
     return totals
+
+
+def log_study(record: dict[str, Any]) -> None:
+    _append(STUDY_LOG, {"ts": _now(), **record})
+
+
+def find_pre(participant_id: str) -> dict[str, Any] | None:
+    """Most recent pre-check for this participant, if any."""
+    if not STUDY_LOG.exists():
+        return None
+    pre = None
+    for line in STUDY_LOG.read_text().splitlines():
+        rec = json.loads(line)
+        if rec.get("participant_id") == participant_id and rec.get("phase") == "pre":
+            pre = rec
+    return pre

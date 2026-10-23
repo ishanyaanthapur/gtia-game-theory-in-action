@@ -8,8 +8,21 @@ from fastapi.staticfiles import StaticFiles
 from backend import orchestrator
 from backend.config import FRONTEND_DIST
 from backend.game.engine import GameError
-from backend.models import CellAnswer, ChatRequest, MoveRequest, NewSessionRequest, SessionView, TurnResponse
-from backend.usage import session_totals
+from datetime import datetime
+
+from backend.game import quiz
+from backend.models import (
+    CellAnswer,
+    ChatRequest,
+    MoveRequest,
+    NewSessionRequest,
+    QuizResult,
+    QuizSubmission,
+    SessionView,
+    TurnResponse,
+)
+from backend.safety import clean_player_text
+from backend.usage import find_pre, log_study, session_totals
 
 app = FastAPI(title="GTiA: Game Theory in Action")
 app.add_middleware(
@@ -59,6 +72,51 @@ async def cell(session_id: str, body: CellAnswer) -> TurnResponse:
 async def usage(session_id: str) -> dict:
     orchestrator.store.get(session_id)  # 404 if unknown
     return session_totals(session_id)
+
+
+# ---------- before/after understanding check (no LLM) ----------
+
+@app.get("/api/quiz")
+async def get_quiz() -> dict:
+    return {"scenario": quiz.SCENARIO, "questions": quiz.public_questions()}
+
+
+@app.post("/api/quiz", response_model=QuizResult)
+async def submit_quiz(body: QuizSubmission) -> QuizResult:
+    n_opts = [len(q.options) for q in quiz.QUESTIONS]
+    if any(a is not None and not 0 <= a < n for a, n in zip(body.answers, n_opts)):
+        raise GameError("One of those answers isn't a valid option.", status=422)
+    score, results = quiz.grade(body.answers)
+    feedback = clean_player_text(body.feedback)[:500] if body.feedback else None
+    pre = find_pre(body.participant_id) if body.phase == "post" else None
+    minutes = None
+    if pre:
+        minutes = round((datetime.now().astimezone() - datetime.fromisoformat(pre["ts"])).total_seconds() / 60, 1)
+    log_study(
+        {
+            "participant_id": body.participant_id,
+            "phase": body.phase,
+            "score": score,
+            "total": len(results),
+            "answers": body.answers,
+            "correct": [r["correct"] for r in results],
+            "confidence": body.confidence,
+            "rating": body.rating,
+            "feedback": feedback,
+            "consent_quote": body.consent_quote,
+            "session_id": body.session_id,
+            "minutes_since_pre": minutes,
+        }
+    )
+    return QuizResult(
+        phase=body.phase,
+        score=score,
+        total=len(results),
+        results=results,
+        pre_score=pre["score"] if pre else None,
+        pre_confidence=pre["confidence"] if pre else None,
+        minutes_since_pre=minutes,
+    )
 
 
 # Serve the prebuilt frontend (committed to the repo) so graders only need Python.

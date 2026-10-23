@@ -42,13 +42,13 @@ export function PayoffMatrix({ view, busy, wrongPulse, onSubmit }: Props) {
   return (
     <div className="matrix-panel">
       <h3>
-        Payoff matrix: years in jail (you, Tung Tung)
+        Payoff matrix: years in jail (you, Tung Tung Tung Sahur)
         <small>{filled}/4 cells</small>
       </h3>
       <div className="matrix">
         <div className="head" />
-        <div className="head">Tung Tung: {LABEL.silent}</div>
-        <div className="head">Tung Tung: {LABEL.confess}</div>
+        <div className="head">Tung Tung Tung Sahur: {LABEL.silent}</div>
+        <div className="head">Tung Tung Tung Sahur: {LABEL.confess}</div>
         {ROWS.map((row) => (
           <Row key={row} row={row}>
             {ROWS.map((col) => {
@@ -68,7 +68,7 @@ export function PayoffMatrix({ view, busy, wrongPulse, onSubmit }: Props) {
                     />
                     ,
                     <input
-                      aria-label="Tung Tung's years"
+                      aria-label="Tung Tung Tung Sahur's years"
                       inputMode="numeric"
                       value={them}
                       placeholder="tung"

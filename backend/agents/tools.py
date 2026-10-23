@@ -27,7 +27,7 @@ def get_case_file(ctx: RunContext[GameDeps]) -> dict:
 
 
 def get_allowed_moves(ctx: RunContext[GameDeps]) -> list[str]:
-    """The moves Tung Tung may choose this round. Your move MUST be one of these."""
+    """The moves Tung Tung Tung Sahur may choose this round. Your move MUST be one of these."""
     return [m.value for m in ctx.deps.allowed_partner_moves or []]
 
 

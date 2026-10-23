@@ -34,10 +34,10 @@ def _is_content_filter(exc: Exception) -> bool:
 # Fixed teaching point per cell, so the tutor never misreads which outcome is good for whom.
 CELL_LESSONS: dict[tuple[Move, Move], str] = {
     (Move.SILENT, Move.SILENT): "mutual cooperation: 1 year each, better for BOTH than both confessing (2 each)",
-    (Move.SILENT, Move.CONFESS): "the sucker's payoff: you stayed loyal but Tung betrayed you, so YOU get the worst "
-    "outcome (3 years) while Tung walks free",
+    (Move.SILENT, Move.CONFESS): "the sucker's payoff: you stayed loyal but Tung Tung Tung Sahur betrayed you, so YOU get the worst "
+    "outcome (3 years) while Tung Tung Tung Sahur walks free",
     (Move.CONFESS, Move.SILENT): "the temptation payoff: you betrayed a loyal partner and walk free (0), the best "
-    "outcome for you and the worst for Tung (3)",
+    "outcome for you and the worst for Tung Tung Tung Sahur (3)",
     (Move.CONFESS, Move.CONFESS): "mutual defection: 2 years each, worse for both than if both had stayed silent",
 }
 
@@ -75,8 +75,8 @@ async def _tutor(session: GameSession, prompt: str, purpose: str, fallback: str)
 async def _intro(session: GameSession, new: list[Message]) -> None:
     prev = session.history[-1] if session.history else None
     recap = (
-        f" Last round: player {prev.player_move.value}, Tung Tung {prev.partner_move.value}, "
-        f"sentences player {prev.player_years}y / Tung {prev.partner_years}y."
+        f" Last round: player {prev.player_move.value}, Tung Tung Tung Sahur {prev.partner_move.value}, "
+        f"sentences player {prev.player_years}y / Tung Tung Tung Sahur {prev.partner_years}y."
         if prev
         else ""
     )
@@ -87,8 +87,8 @@ async def _intro(session: GameSession, new: list[Message]) -> None:
             session,
             f"INTRO. Round {session.round} of 4. Suspect avatar: {session.avatar.value}.{recap}",
             purpose=f"intro_r{session.round}",
-            fallback="Sit down. You and Tung Tung robbed Sam Altman's GPU vault. Confess and walk free "
-            "if Tung stays quiet. Both quiet: **1 year** each. Both confess: **2 years** each. Your call.",
+            fallback="Sit down. You and Tung Tung Tung Sahur robbed Sam Altman's GPU vault. Confess and walk free "
+            "if Tung Tung Tung Sahur stays quiet. Both quiet: **1 year** each. Both confess: **2 years** each. Your call.",
         ),
     )
 
@@ -145,7 +145,7 @@ async def play_move(session_id: str, move: Move) -> TurnResponse:
         )
         partner_move, partner_line = decision.move, decision.line
     except AGENT_FAILURES as exc:
-        partner_move, partner_line, overridden = allowed[0], "Tung tung tung...!", True
+        partner_move, partner_line, overridden = allowed[0], "Tung Tung Tung Sahur tung tung...!", True
         audit(session.session_id, "partner_override", allowed=[m.value for m in allowed], error=str(exc))
     if partner_move not in allowed:  # belt and braces: the validator should already prevent this
         audit(session.session_id, "partner_override", attempted=partner_move.value)
@@ -157,8 +157,8 @@ async def play_move(session_id: str, move: Move) -> TurnResponse:
 
     # 2) Cop announces the engine's verdict.
     verdict = (
-        f"VERDICT. Round {result.round}. Player chose {move.value}; Tung Tung chose {partner_move.value}. "
-        f"Sentence: player {result.player_years} years, Tung Tung {result.partner_years} years."
+        f"VERDICT. Round {result.round}. Player chose {move.value}; Tung Tung Tung Sahur chose {partner_move.value}. "
+        f"Sentence: player {result.player_years} years, Tung Tung Tung Sahur {result.partner_years} years."
     )
     _say(
         session,
@@ -167,13 +167,13 @@ async def play_move(session_id: str, move: Move) -> TurnResponse:
             session,
             verdict,
             purpose=f"verdict_r{result.round}",
-            fallback=f"Tung Tung chose **{_label(partner_move)}**. You get **{result.player_years} years**, "
-            f"Tung Tung gets **{result.partner_years}**. Take them away!",
+            fallback=f"Tung Tung Tung Sahur chose **{_label(partner_move)}**. You get **{result.player_years} years**, "
+            f"Tung Tung Tung Sahur gets **{result.partner_years}**. Take them away!",
         ),
     )
 
     # 3) Tutor opens the matrix and asks for this round's cell.
-    cell = f"You: {_label(move)} / Tung: {_label(partner_move)}"
+    cell = f"You: {_label(move)} / Tung Tung Tung Sahur: {_label(partner_move)}"
     _say(
         session,
         new,
@@ -181,7 +181,7 @@ async def play_move(session_id: str, move: Move) -> TurnResponse:
             session,
             f"ASK_CELL. Round {result.round}. Cell to fill: {cell}.",
             purpose=f"ask_r{result.round}",
-            fallback=f"Let's fill in **{cell}**. How many years did you get, and how many did Tung Tung get?",
+            fallback=f"Let's fill in **{cell}**. How many years did you get, and how many did Tung Tung Tung Sahur get?",
         ),
     )
     return TurnResponse(new_messages=new, state=session.view())
@@ -197,9 +197,9 @@ async def answer_cell(session_id: str, player_years: int, partner_years: int) ->
         correct=correct, attempt=r.cell_attempts,
     )
     new: list[Message] = []
-    _say(session, new, Message(speaker="player", text=f"My years: **{player_years}**, Tung Tung's: **{partner_years}**"))
+    _say(session, new, Message(speaker="player", text=f"My years: **{player_years}**, Tung Tung Tung Sahur's: **{partner_years}**"))
 
-    cell = f"You: {_label(r.player_move)} / Tung: {_label(r.partner_move)}"
+    cell = f"You: {_label(r.player_move)} / Tung Tung Tung Sahur: {_label(r.partner_move)}"
     newly_locked = [m for m in session.locked_moves() if m not in locked_before]
     nudge = (
         f" ALSO NUDGE: the player has now seen both outcomes of '{newly_locked[0].value}'; "
@@ -216,11 +216,11 @@ async def answer_cell(session_id: str, player_years: int, partner_years: int) ->
             f"REVEAL. Cell {cell} = ({r.player_years}, {r.partner_years}). "
             f"Player answered ({player_years}, {partner_years}).{lesson}{nudge}"
         )
-        fallback = f"The answer for **{cell}** is ({r.player_years}, {r.partner_years}): yours first, then Tung Tung's."
+        fallback = f"The answer for **{cell}** is ({r.player_years}, {r.partner_years}): yours first, then Tung Tung Tung Sahur's."
     else:
         prompt = (
             f"WRONG. Attempt {r.cell_attempts} of 3. Cell {cell}. Player answered ({player_years}, {partner_years}). "
-            f"The cop said: player {r.player_years}y, Tung {r.partner_years}y (do NOT state these numbers)."
+            f"The cop said: player {r.player_years}y, Tung Tung Tung Sahur {r.partner_years}y (do NOT state these numbers)."
         )
         fallback = "Not quite. What did Detective Byte say each of you got? Your years go first."
     if session.phase == Phase.COMPLETE:

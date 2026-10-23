@@ -15,13 +15,14 @@ interface Props {
   avatar: AvatarId;
   messages: Message[];
   view: SessionView | null;
-  busy: boolean;
+  busy: boolean; // true while the AI is thinking OR a speech bubble is still being read
+  dialoguePending: boolean;
   usage: Usage | null;
   onSend: (text: string) => void;
   onMove: (m: Move) => void;
 }
 
-export function ChatPanel({ avatar, messages, view, busy, usage, onSend, onMove }: Props) {
+export function ChatPanel({ avatar, messages, view, busy, dialoguePending, usage, onSend, onMove }: Props) {
   const [draft, setDraft] = useState("");
   const logRef = useRef<HTMLDivElement>(null);
 
@@ -51,7 +52,7 @@ export function ChatPanel({ avatar, messages, view, busy, usage, onSend, onMove 
     <aside className="side">
       <div className="side-head">
         <div>
-          <h2>Case file · Dilemma Detectives</h2>
+          <h2>Case transcript</h2>
           <small>
             {AVATARS[avatar].name} · Round {view ? Math.min(view.round, view.max_rounds) : 1} of {view?.max_rounds ?? 4}
           </small>
@@ -65,15 +66,6 @@ export function ChatPanel({ avatar, messages, view, busy, usage, onSend, onMove 
             <Markdown>{m.text}</Markdown>
           </div>
         ))}
-        {busy && (
-          <div className="msg system" style={{ alignSelf: "flex-start", background: "transparent", border: "none" }}>
-            <span className="typing" aria-label="AI is responding">
-              <span />
-              <span />
-              <span />
-            </span>
-          </div>
-        )}
       </div>
 
       <div className="composer">
@@ -84,7 +76,7 @@ export function ChatPanel({ avatar, messages, view, busy, usage, onSend, onMove 
               return (
                 <button key={m} className={`move-btn ${m}`} disabled={busy || locked} onClick={() => onMove(m)}>
                   {m === "silent" ? "🤐 Stay Silent" : "🗣️ Confess"}
-                  <small>{locked ? "Already explored" : m === "silent" ? "Protect Tung Tung" : "Blame Tung Tung"}</small>
+                  <small>{locked ? "Already explored" : m === "silent" ? "Protect Tung Tung Tung Sahur" : "Blame Tung Tung Tung Sahur"}</small>
                 </button>
               );
             })}
@@ -98,6 +90,8 @@ export function ChatPanel({ avatar, messages, view, busy, usage, onSend, onMove 
           placeholder={
             !view
               ? "Detective Byte is getting ready…"
+              : dialoguePending
+              ? "Click Next on the speech bubble to keep going…"
               : !interrogating
               ? "Fill in the payoff matrix with Nash-sensei →"
               : chatLeft > 0

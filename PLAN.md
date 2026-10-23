@@ -313,3 +313,26 @@ tokens. The token meter shows about 37K input for a browser game with one cop ch
   - The clone served the built frontend, and a full real game over HTTP reached `complete`:
     20 agent runs, 31.0K input, 0 cached, and 1.7K output tokens.
   - A fifth move was rejected with 409, and the `/../.env` probe returned the app page, not the file.
+
+---
+
+## 11. Playtest feedback round (Oct 23)
+- **Before/after understanding check:**
+  - 5 questions plus a confidence rating before Door 1; the same questions plus a usefulness
+    rating and an optional quote after the debrief, followed by a results screen.
+  - Logged to `output/user_study.jsonl`; `scripts/study_summary.py` builds the Impact numbers.
+  - Correct answers are spread across option positions, and every question has a "Not sure" option.
+- **Avatar select** is now a carousel (arrows, ← → keys, mouse wheel, cards) with personalities:
+  - Yoshi: smart and strong
+  - Jujubee: energetic, playful, intelligent
+  - Kimchi: cunning, loves to eat
+
+  The cop's prompt knows these personalities.
+- **Dialogue** shows as click-through speech bubbles over the speaker's head: the cop, Tung Tung
+  Tung Sahur in Room B, and Nash-sensei in the cells. Moves stay locked until the player has read
+  every piece. The right panel is now a case transcript.
+- **The player sits** in a chair. Detective Byte stands, paces behind the table, and stops to face
+  the player while talking.
+- **Naming:** Tung Tung Tung Sahur is always written in full (he/him) in the UI, the prompts, and the docs.
+- **Prompt caching:** after these prompt changes, the cop's static prefix is long enough to cache
+  (1,031 cached input tokens seen).

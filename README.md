@@ -1,8 +1,7 @@
 # GTiA: Game Theory in Action
 
 A 3D game that teaches game theory by having you play against AI characters. In Door 1,
-**Dilemma Detectives**, you're interrogated about a heist alongside your partner, Tung Tung
-Tung Sahur, and you build the Prisoner's Dilemma payoff matrix one cell at a time from your own
+**Dilemma Detectives**, you're interrogated about a heist alongside your partner, Tung Tung Tung Sahur, and you build the Prisoner's Dilemma payoff matrix one cell at a time from your own
 choices.
 
 > Status (Oct 23): playable end to end, from avatar select to the hallway to Door 1 to the debrief.
@@ -31,13 +30,29 @@ cd frontend && npm install && npm run dev   # Vite on :5173 proxies /api to :800
 npm run build                                # rebuild dist/ (served by FastAPI)
 ```
 
-Shortcuts for demos and screenshots: `/?play=kimchi` jumps straight into Door 1, and
-`/?hall=yoshi` opens the hallway.
+Shortcuts for demos and screenshots:
+- `/?play=kimchi` jumps straight into Door 1.
+- `/?play=kimchi&check=1` starts at the before-check, which is useful for user tests.
+- `/?hall=yoshi` opens the hallway.
+
+## Before/after understanding check (user study)
+
+Players who enter Door 1 from the hallway first answer 5 multiple-choice questions on the
+Prisoner's Dilemma. The questions cover best responses, dominant strategy, Nash equilibrium, and
+why it's a dilemma. Each question has a "Not sure" option, and there's a 1–5 confidence rating.
+
+After the debrief, players answer the same questions again, rate the game's usefulness, and can
+leave a quote if they opt in. They then see their before vs. after score.
+
+- Results go to `output/user_study.jsonl`, keyed by a random ID. No names are stored.
+- Grading is done in code, so the check costs no tokens.
+- `.venv/bin/python scripts/study_summary.py` writes `output/user_study_summary.md` with the mean
+  gain, the per-question % correct, the confidence change, and consented quotes.
 
 ## Other commands
 
 ```bash
-.venv/bin/python -m pytest -q              # 53 offline tests (engine + safety), no API key needed
+.venv/bin/python -m pytest -q              # 59 offline tests (engine, safety, quiz), no API key needed
 .venv/bin/python scripts/smoke_run.py      # one full game against the real agents → output/smoke_run.md
 ```
 

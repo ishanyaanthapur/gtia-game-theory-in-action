@@ -5,6 +5,7 @@ export interface AvatarStyle {
   name: string;
   species: string;
   blurb: string;
+  traits: string[];
   fur: string;
   muzzle: string;
   limbs: string; // arms/feet (panda = black)
@@ -22,7 +23,8 @@ export const AVATARS: Record<AvatarId, AvatarStyle> = {
     id: "yoshi",
     name: "Yoshi",
     species: "Tabby cat samurai",
-    blurb: "Calculating, curious, always lands on its feet.",
+    blurb: "Brains and brawn. Out-thinks you, then out-lifts you.",
+    traits: ["🧠 Smart", "💪 Strong"],
     fur: "#f28c28",
     muzzle: "#fff7ed",
     limbs: "#f28c28",
@@ -37,7 +39,8 @@ export const AVATARS: Record<AvatarId, AvatarStyle> = {
     id: "jujubee",
     name: "Jujubee",
     species: "Golden dog samurai",
-    blurb: "Loyal to a fault... probably.",
+    blurb: "Bounces off the walls and still solves the puzzle first.",
+    traits: ["⚡ Energetic", "🎾 Playful", "🧠 Intelligent"],
     fur: "#e7b55c",
     muzzle: "#fdebc8",
     limbs: "#e7b55c",
@@ -52,7 +55,8 @@ export const AVATARS: Record<AvatarId, AvatarStyle> = {
     id: "kimchi",
     name: "Kimchi",
     species: "Panda samurai",
-    blurb: "Chill exterior, strategic bamboo brain.",
+    blurb: "Always three moves ahead, and always thinking about lunch.",
+    traits: ["🦊 Cunning", "🍜 Loves to eat"],
     fur: "#f8fafc",
     muzzle: "#ffffff",
     limbs: "#18181b",

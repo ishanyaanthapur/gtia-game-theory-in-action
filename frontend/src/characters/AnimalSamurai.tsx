@@ -12,9 +12,10 @@ type Props = ThreeElements["group"] & {
   avatar: AvatarId;
   walking?: boolean;
   bob?: boolean;
+  seated?: boolean; // sitting on a chair: thighs forward, shins down (feet on the floor)
 };
 
-export function AnimalSamurai({ avatar, walking = false, bob = true, ...group }: Props) {
+export function AnimalSamurai({ avatar, walking = false, bob = true, seated = false, ...group }: Props) {
   const s = AVATARS[avatar];
   const body = useRef<Group>(null);
   const tail = useRef<Group>(null);
@@ -36,10 +37,26 @@ export function AnimalSamurai({ avatar, walking = false, bob = true, ...group }:
   return (
     <group {...group}>
       <group ref={body}>
-        {/* feet + hakama */}
-        <Ball r={0.11} position={[-0.14, 0.06, 0.06]} scale={[1, 0.6, 1.3]} color={s.limbs} />
-        <Ball r={0.11} position={[0.14, 0.06, 0.06]} scale={[1, 0.6, 1.3]} color={s.limbs} />
-        <Cyl top={0.27} bottom={0.36} h={0.42} position={[0, 0.3, 0]} color={shade(s.armor, -0.45)} />
+        {seated ? (
+          <>
+            {/* seated: hakama hips, thighs forward, shins down, feet on the floor */}
+            <Cyl top={0.27} bottom={0.3} h={0.16} position={[0, 0.5, 0]} color={shade(s.armor, -0.45)} />
+            {[-0.13, 0.13].map((x) => (
+              <group key={x}>
+                <Capsule r={0.11} len={0.3} position={[x, 0.47, 0.2]} rotation={[Math.PI / 2, 0, 0]} color={shade(s.armor, -0.45)} />
+                <Capsule r={0.09} len={0.26} position={[x, 0.25, 0.4]} color={shade(s.armor, -0.45)} />
+                <Ball r={0.1} position={[x, 0.05, 0.46]} scale={[1, 0.6, 1.3]} color={s.limbs} />
+              </group>
+            ))}
+          </>
+        ) : (
+          <>
+            {/* feet + hakama */}
+            <Ball r={0.11} position={[-0.14, 0.06, 0.06]} scale={[1, 0.6, 1.3]} color={s.limbs} />
+            <Ball r={0.11} position={[0.14, 0.06, 0.06]} scale={[1, 0.6, 1.3]} color={s.limbs} />
+            <Cyl top={0.27} bottom={0.36} h={0.42} position={[0, 0.3, 0]} color={shade(s.armor, -0.45)} />
+          </>
+        )}
 
         {/* torso: fur + dō chest plate with trim */}
         <Capsule r={0.27} len={0.22} position={[0, 0.66, 0]} color={s.fur} />

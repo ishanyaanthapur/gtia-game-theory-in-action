@@ -33,7 +33,7 @@ class PartnerDecision(BaseModel):
     """Tung Tung Tung Sahur's move for this round."""
 
     move: Move = Field(description="Must be one of the moves returned by get_allowed_moves().")
-    line: str = Field(description="One short in-character line Tung Tung shouts from the other room. Max 25 words.")
+    line: str = Field(description="One short in-character line Tung Tung Tung Sahur shouts from the other room. Max 25 words.")
     reasoning: str = Field(description="One sentence on why, for the audit log (not shown to the player).")
 
 
@@ -106,6 +106,29 @@ class MoveRequest(BaseModel):
 class CellAnswer(BaseModel):
     player_years: int = Field(ge=0, le=10)
     partner_years: int = Field(ge=0, le=10)
+
+
+class QuizSubmission(BaseModel):
+    """One before/after understanding check. participant_id is random and links pre to post (no names)."""
+
+    participant_id: str = Field(pattern=r"^[a-z0-9-]{6,40}$")
+    phase: Literal["pre", "post"]
+    answers: list[int | None] = Field(min_length=5, max_length=5)
+    confidence: int = Field(ge=1, le=5, description="How confident are you explaining the PD to a friend? 1-5")
+    rating: int | None = Field(default=None, ge=1, le=5, description="Post only: how useful was the game? 1-5")
+    feedback: str | None = Field(default=None, max_length=500)
+    consent_quote: bool = False
+    session_id: str | None = Field(default=None, max_length=40)
+
+
+class QuizResult(BaseModel):
+    phase: Literal["pre", "post"]
+    score: int
+    total: int
+    results: list[dict]
+    pre_score: int | None = None  # filled on "post" when this participant has a pre-check on file
+    pre_confidence: int | None = None
+    minutes_since_pre: float | None = None
 
 
 class TurnResponse(BaseModel):

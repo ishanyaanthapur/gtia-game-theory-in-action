@@ -1,15 +1,52 @@
-import { useState } from "react";
-import { Canvas } from "@react-three/fiber";
+// Avatar carousel: one samurai in the spotlight; scroll with arrows, arrow keys, mouse wheel, or the cards.
+import { useEffect, useRef, useState } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { ContactShadows } from "@react-three/drei";
+import type { Group } from "three";
 import { AnimalSamurai } from "../characters/AnimalSamurai";
 import { AVATARS, AVATAR_ORDER } from "../characters/avatars";
 import type { AvatarId } from "../types";
 import { Cyl } from "../characters/parts";
 import { CameraAim } from "./CameraAim";
 
+const N = AVATAR_ORDER.length;
+const RADIUS = 1.9;
+const STEP = (Math.PI * 2) / N;
+
 export function AvatarSelect({ onPick }: { onPick: (a: AvatarId) => void }) {
-  const [chosen, setChosen] = useState<AvatarId | null>(null);
-  const [hover, setHover] = useState<AvatarId | null>(null);
+  const [index, setIndex] = useState(0); // keeps counting past N so the turntable spins the short way
+  const wheelLock = useRef(0);
+  const current = AVATAR_ORDER[((index % N) + N) % N];
+  const a = AVATARS[current];
+
+  const go = (delta: number) => setIndex((i) => i + delta);
+  const goTo = (id: AvatarId) =>
+    setIndex((i) => {
+      const target = AVATAR_ORDER.indexOf(id);
+      const now = ((i % N) + N) % N;
+      let d = target - now;
+      if (d > N / 2) d -= N;
+      if (d < -N / 2) d += N;
+      return i + d;
+    });
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") go(1);
+      else if (e.key === "ArrowLeft") go(-1);
+      else if (e.key === "Enter") onPick(current);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
+  const onWheel = (e: React.WheelEvent) => {
+    const now = Date.now();
+    const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if (Math.abs(d) < 8 || now - wheelLock.current < 450) return;
+    wheelLock.current = now;
+    go(d > 0 ? 1 : -1);
+  };
 
   return (
     <div className="screen select-screen">
@@ -19,56 +56,81 @@ export function AvatarSelect({ onPick }: { onPick: (a: AvatarId) => void }) {
         <p className="sub">Every door in the hall is a game. Every opponent is an AI. Learn the theory by living it.</p>
       </header>
 
-      <div className="select-stage">
-        <Canvas shadows camera={{ position: [0, 1.25, 4.3], fov: 40 }}>
-          <CameraAim target={[0, 0.8, 0]} />
+      <div className="select-stage" onWheel={onWheel}>
+        <Canvas shadows camera={{ position: [0, 1.35, RADIUS + 3.6], fov: 38 }}>
+          <CameraAim target={[0, 0.85, RADIUS - 0.4]} />
           <color attach="background" args={["#0b0614"]} />
-          <ambientLight intensity={0.7} />
-          <directionalLight position={[3, 5, 4]} intensity={1.6} castShadow />
-          <pointLight position={[0, 2.5, 2]} color="#a855f7" intensity={6} distance={8} />
-          {AVATAR_ORDER.map((id, i) => {
-            const x = (i - 1) * 1.9;
-            const active = chosen === id || hover === id;
-            return (
-              <group
-                key={id}
-                position={[x, 0, 0]}
-                onClick={() => setChosen(id)}
-                onPointerOver={() => setHover(id)}
-                onPointerOut={() => setHover(null)}
-              >
-                <Cyl top={0.55} bottom={0.6} h={0.12} position={[0, 0.06, 0]} color={active ? AVATARS[id].armor : "#2a1745"} />
-                <AnimalSamurai avatar={id} position={[0, 0.12, 0]} rotation={[0, active ? 0 : -0.25 + i * 0.25, 0]} scale={active ? 1.1 : 1} />
-              </group>
-            );
-          })}
-          <ContactShadows position={[0, 0.01, 0]} opacity={0.5} scale={10} blur={2.5} />
+          <ambientLight intensity={0.55} />
+          <directionalLight position={[3, 5, 6]} intensity={1.4} castShadow />
+          <spotLight position={[0, 4.5, RADIUS + 1.5]} angle={0.4} penumbra={0.6} intensity={40} color="#e9d5ff" />
+          <pointLight position={[0, 2.5, RADIUS + 1]} color={a.armor} intensity={5} distance={6} />
+          <Turntable index={index} active={current} onPick={goTo} />
+          <ContactShadows position={[0, 0.01, 0]} opacity={0.5} scale={12} blur={2.5} />
         </Canvas>
+        <button className="carousel-arrow left" aria-label="Previous character" onClick={() => go(-1)}>‹</button>
+        <button className="carousel-arrow right" aria-label="Next character" onClick={() => go(1)}>›</button>
+        <div className="spotlight-card" style={{ ["--accent" as string]: a.armor }}>
+          <strong>{a.name}</strong>
+          <span>{a.species}</span>
+          <div className="traits">
+            {a.traits.map((t) => (
+              <span key={t} className="trait">{t}</span>
+            ))}
+          </div>
+          <em>{a.blurb}</em>
+        </div>
       </div>
 
       <div className="avatar-cards">
         {AVATAR_ORDER.map((id) => {
-          const a = AVATARS[id];
+          const c = AVATARS[id];
           return (
             <button
               key={id}
-              className={`avatar-card ${chosen === id ? "chosen" : ""}`}
-              style={{ ["--accent" as string]: a.armor }}
-              onClick={() => setChosen(id)}
-              onMouseEnter={() => setHover(id)}
-              onMouseLeave={() => setHover(null)}
+              className={`avatar-card ${current === id ? "chosen" : ""}`}
+              style={{ ["--accent" as string]: c.armor }}
+              onClick={() => goTo(id)}
             >
-              <strong>{a.name}</strong>
-              <span>{a.species}</span>
-              <em>{a.blurb}</em>
+              <strong>{c.name}</strong>
+              <span>{c.traits.join(" · ")}</span>
             </button>
           );
         })}
       </div>
 
-      <button className="primary big" disabled={!chosen} onClick={() => chosen && onPick(chosen)}>
-        {chosen ? `Enter the hall as ${AVATARS[chosen].name} →` : "Pick an avatar"}
+      <button className="primary big" onClick={() => onPick(current)}>
+        Enter the hall as {a.name} →
       </button>
+      <p className="fine" style={{ margin: 0 }}>Scroll, use ← → keys, or click a card to switch characters</p>
     </div>
+  );
+}
+
+function Turntable({ index, active, onPick }: { index: number; active: AvatarId; onPick: (id: AvatarId) => void }) {
+  const ring = useRef<Group>(null);
+  useFrame((_, dt) => {
+    if (!ring.current) return;
+    const goal = -index * STEP;
+    ring.current.rotation.y += (goal - ring.current.rotation.y) * (1 - Math.pow(0.002, dt));
+  });
+
+  return (
+    <group ref={ring}>
+      {AVATAR_ORDER.map((id, i) => {
+        const angle = i * STEP;
+        const isActive = id === active;
+        return (
+          <group
+            key={id}
+            position={[Math.sin(angle) * RADIUS, 0, Math.cos(angle) * RADIUS]}
+            rotation={[0, angle, 0]}
+            onClick={(e) => (e.stopPropagation(), onPick(id))}
+          >
+            <Cyl top={0.55} bottom={0.6} h={0.12} position={[0, 0.06, 0]} color={isActive ? AVATARS[id].armor : "#2a1745"} />
+            <AnimalSamurai avatar={id} position={[0, 0.12, 0]} scale={isActive ? 1.15 : 0.9} />
+          </group>
+        );
+      })}
+    </group>
   );
 }

@@ -59,3 +59,40 @@ export interface Usage {
   cached_input_tokens: number;
   output_tokens: number;
 }
+
+export interface QuizQuestion {
+  id: string;
+  concept: string;
+  prompt: string;
+  options: string[];
+}
+
+export interface QuizResultItem {
+  id: string;
+  concept: string;
+  chosen: number | null;
+  answer: number;
+  correct: boolean;
+  explanation: string;
+}
+
+export interface QuizResult {
+  phase: "pre" | "post";
+  score: number;
+  total: number;
+  results: QuizResultItem[];
+  pre_score: number | null;
+  pre_confidence: number | null;
+  minutes_since_pre: number | null;
+}
+
+export interface QuizSubmission {
+  participant_id: string;
+  phase: "pre" | "post";
+  answers: (number | null)[];
+  confidence: number;
+  rating?: number | null;
+  feedback?: string | null;
+  consent_quote?: boolean;
+  session_id?: string | null;
+}

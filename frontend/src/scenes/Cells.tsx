@@ -1,10 +1,11 @@
-// Jail cells: the player and Tung Tung side by side (or free outside), Nash-sensei appears in foxfire.
+// Jail cells: the player and Tung Tung Tung Sahur side by side (or free outside), Nash-sensei appears in foxfire.
 import { Label3D } from "./Label3D";
 import { AnimalSamurai } from "../characters/AnimalSamurai";
 import { Kitsune } from "../characters/Kitsune";
 import { TungTung } from "../characters/TungTung";
 import { Box, Cyl } from "../characters/parts";
 import type { AvatarId, RoundResult } from "../types";
+import { SpeechAnchor } from "./SpeechAnchor";
 
 const CELL_X = 1.8;
 
@@ -44,12 +45,18 @@ export function Cells({ avatar, result }: { avatar: AvatarId; result: RoundResul
       <AnimalSamurai avatar={avatar} position={youJailed ? [-CELL_X, 0, -0.1] : [-CELL_X, 0, 2]} scale={1.05} />
       <Label3D position={[-CELL_X, 3.35, 0.9]} title="You" subtitle={sentenceText(result?.player_years)} accent="#c084fc" />
 
-      {/* Tung Tung */}
+      {/* Tung Tung Tung Sahur */}
       <TungTung position={tungJailed ? [CELL_X, 0, -0.2] : [CELL_X, 0, 2]} rotation={[0, -0.3, 0]} scale={0.85} swinging={!tungJailed} />
-      <Label3D position={[CELL_X, 3.35, 0.9]} title="Tung Tung" subtitle={sentenceText(result?.partner_years)} accent="#e3a86b" />
+      <Label3D position={[CELL_X, 3.35, 0.9]} title="Tung Tung Tung Sahur" subtitle={sentenceText(result?.partner_years)} accent="#e3a86b" />
 
       {/* Nash-sensei floats in the corridor */}
       <Kitsune position={[0, 0, 2.6]} scale={0.72} />
+      <group position={[0, 0, 2.6]}>
+        <SpeechAnchor id="tutor" offset={[0, 1.95, 0]} />
+      </group>
+      <group position={tungJailed ? [CELL_X, 0, -0.2] : [CELL_X, 0, 2]}>
+        <SpeechAnchor id="partner" offset={[0, 2.0, 0]} />
+      </group>
     </group>
   );
 }

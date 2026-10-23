@@ -1,4 +1,4 @@
-import type { AvatarId, Move, TurnResponse, Usage } from "./types";
+import type { AvatarId, Move, QuizQuestion, QuizResult, QuizSubmission, TurnResponse, Usage } from "./types";
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -32,4 +32,6 @@ export const api = {
   cell: (id: string, player_years: number, partner_years: number) =>
     call<TurnResponse>(`/session/${id}/cell`, { player_years, partner_years }),
   usage: (id: string) => call<Usage>(`/session/${id}/usage`),
+  quiz: () => call<{ scenario: string; questions: QuizQuestion[] }>("/quiz"),
+  submitQuiz: (body: QuizSubmission) => call<QuizResult>("/quiz", body),
 };
