@@ -1,4 +1,5 @@
-// Before/after understanding check. Same 5 questions both times; the score change is the learning gain.
+// Before/after understanding check. Before: ONE rotating question. After: all 5 + ratings.
+// Learning gain = that one question, before vs after, for the same player.
 import { useEffect, useState } from "react";
 import { ApiError, api } from "../api";
 import type { QuizQuestion, QuizResult } from "../types";
@@ -25,10 +26,10 @@ export function Quiz({ phase, participantId, sessionId, onDone, onSkip }: Props)
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
-    api.quiz().then((d) => (setQuestions(d.questions), setScenario(d.scenario))).catch(() => setError("Couldn't load the questions. Is the server running?"));
+    api.quiz(phase).then((d) => (setQuestions(d.questions), setScenario(d.scenario))).catch(() => setError("Couldn't load the questions. Is the server running?"));
   }, []);
 
-  const complete = questions.length > 0 && questions.every((q) => q.id in answers) && confidence !== null && (phase === "pre" || rating !== null);
+  const complete = questions.length > 0 && questions.every((q) => q.id in answers) && (phase === "pre" || (confidence !== null && rating !== null));
 
   const submit = async () => {
     if (!complete || sending) return;
@@ -37,8 +38,8 @@ export function Quiz({ phase, participantId, sessionId, onDone, onSkip }: Props)
       const result = await api.submitQuiz({
         participant_id: participantId,
         phase,
-        answers: questions.map((q) => (answers[q.id] === NOT_SURE ? null : answers[q.id])),
-        confidence: confidence!,
+        answers: Object.fromEntries(questions.map((q) => [q.id, answers[q.id] === NOT_SURE ? null : answers[q.id]])),
+        confidence: phase === "post" ? confidence : null,
         rating: phase === "post" ? rating : null,
         feedback: phase === "post" && feedback.trim() ? feedback.trim() : null,
         consent_quote: phase === "post" && consent,
@@ -55,11 +56,11 @@ export function Quiz({ phase, participantId, sessionId, onDone, onSkip }: Props)
     <div className="screen quiz-screen">
       <div className="quiz-card">
         <p className="eyebrow">{phase === "pre" ? "Before you play" : "After the game"}</p>
-        <h1>{phase === "pre" ? "Quick check: what do you already know?" : "Same questions, one more time"}</h1>
+        <h1>{phase === "pre" ? "One quick question before you play" : "Now, what did you learn?"}</h1>
         <p className="sub">
           {phase === "pre"
-            ? "5 questions, about a minute. Guessing is totally fine, and \"Not sure\" is a great answer. We ask the same questions after the game to see what it taught you."
-            : "Answer the same 5 questions again. Then you'll see your before vs. after score and what each question was testing."}
+            ? "Just one, and \"Not sure\" is a perfectly good answer. We'll ask again after the game to see what it taught you."
+            : "5 quick questions (including the one you saw before). Then you'll see your before vs. after and what each question was testing."}
         </p>
 
         {scenario && (
@@ -87,16 +88,15 @@ export function Quiz({ phase, participantId, sessionId, onDone, onSkip }: Props)
           </fieldset>
         ))}
 
-        <Scale
-          label="How confident would you be explaining the Prisoner's Dilemma to a friend?"
-          low="Not at all"
-          high="Very"
-          value={confidence}
-          onChange={setConfidence}
-        />
-
         {phase === "post" && (
           <>
+            <Scale
+              label="How confident would you be explaining the Prisoner's Dilemma to a friend now?"
+              low="Not at all"
+              high="Very"
+              value={confidence}
+              onChange={setConfidence}
+            />
             <Scale label="How useful was the game for learning this?" low="Not useful" high="Very useful" value={rating} onChange={setRating} />
             <fieldset className="quiz-q">
               <legend>What did you learn, or what was confusing? (optional)</legend>
@@ -143,32 +143,33 @@ function Scale({ label, low, high, value, onChange }: { label: string; low: stri
 }
 
 export function QuizResults({ result, onContinue }: { result: QuizResult; onContinue: () => void }) {
-  const gain = result.pre_score !== null ? result.score - result.pre_score : null;
+  const pre = result.pre;
+  const mark = (ok: boolean) => (ok ? "✓ Right" : "✗ Not yet");
   return (
     <div className="screen quiz-screen">
       <div className="quiz-card">
         <p className="eyebrow">Your results</p>
-        <div className="score-compare">
-          {result.pre_score !== null && (
-            <>
-              <div className="score-box">
+        {pre && (
+          <>
+            <h1 style={{ textAlign: "center" }}>{pre.concept}</h1>
+            <p className="sub" style={{ textAlign: "center", marginBottom: 6 }}>The question you saw before the game:</p>
+            <div className="score-compare">
+              <div className={`score-box ${pre.correct_before ? "after" : ""}`}>
                 <small>Before</small>
-                <strong>{result.pre_score}/{result.total}</strong>
+                <strong>{mark(pre.correct_before)}</strong>
               </div>
               <span className="arrow">→</span>
-            </>
-          )}
-          <div className="score-box after">
-            <small>After</small>
-            <strong>{result.score}/{result.total}</strong>
-          </div>
-        </div>
-        {gain !== null && (
-          <p className="sub" style={{ textAlign: "center" }}>
-            {gain > 0 ? `+${gain} question${gain > 1 ? "s" : ""}, nice! ` : gain === 0 ? "Same score. " : ""}
-            {result.minutes_since_pre !== null && `Learned in about ${Math.max(1, Math.round(result.minutes_since_pre))} min.`}
-          </p>
+              <div className={`score-box ${pre.correct_after ? "after" : ""}`}>
+                <small>After</small>
+                <strong>{mark(pre.correct_after)}</strong>
+              </div>
+            </div>
+          </>
         )}
+        <p className="sub" style={{ textAlign: "center" }}>
+          All 5 questions after the game: <b style={{ color: "var(--text)" }}>{result.score}/{result.total}</b>
+          {result.minutes_since_pre !== null && ` · learned in about ${Math.max(1, Math.round(result.minutes_since_pre))} min`}
+        </p>
         <ul className="result-list">
           {result.results.map((r) => (
             <li key={r.id} className={r.correct ? "ok" : "miss"}>

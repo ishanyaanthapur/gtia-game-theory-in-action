@@ -1,7 +1,8 @@
 """Before/after understanding check (pre-test / post-test) for the Impact section.
 
-The same 5 questions are asked before Door 1 and after the debrief. The change in score is the
-learning gain. Graded in code; no LLM calls, no token cost.
+Before Door 1 the player answers ONE question, rotated so every question gets asked about equally
+often. After the debrief they answer all 5. Learning gain = the pre-asked question, before vs
+after, for the same player. Graded in code; no LLM calls, no token cost.
 """
 from __future__ import annotations
 
@@ -77,14 +78,27 @@ QUESTIONS: list[Question] = [
 ]
 
 
-def public_questions() -> list[dict]:
+BY_ID = {q.id: q for q in QUESTIONS}
+
+
+def public_questions(ids: list[str] | None = None) -> list[dict]:
     """Questions as sent to the browser (no answers or explanations)."""
-    return [q.model_dump(include={"id", "concept", "prompt", "options"}) for q in QUESTIONS]
+    chosen = [BY_ID[i] for i in ids] if ids else QUESTIONS
+    return [q.model_dump(include={"id", "concept", "prompt", "options"}) for q in chosen]
 
 
-def grade(answers: list[int | None]) -> tuple[int, list[dict]]:
+def pick_pre_question(times_asked: dict[str, int]) -> str:
+    """Rotate: the question asked least often so far in pre-checks (ties go in list order)."""
+    return min(QUESTIONS, key=lambda q: times_asked.get(q.id, 0)).id
+
+
+def grade(answers: dict[str, int | None]) -> tuple[int, list[dict]]:
+    """Grade the questions that were asked (in the standard question order)."""
     results = []
-    for q, a in zip(QUESTIONS, answers, strict=True):
+    for q in QUESTIONS:
+        if q.id not in answers:
+            continue
+        a = answers[q.id]
         results.append(
             {
                 "id": q.id,

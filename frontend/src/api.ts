@@ -32,6 +32,6 @@ export const api = {
   cell: (id: string, player_years: number, partner_years: number) =>
     call<TurnResponse>(`/session/${id}/cell`, { player_years, partner_years }),
   usage: (id: string) => call<Usage>(`/session/${id}/usage`),
-  quiz: () => call<{ scenario: string; questions: QuizQuestion[] }>("/quiz"),
+  quiz: (phase: "pre" | "post") => call<{ scenario: string; questions: QuizQuestion[] }>(`/quiz?phase=${phase}`),
   submitQuiz: (body: QuizSubmission) => call<QuizResult>("/quiz", body),
 };

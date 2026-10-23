@@ -9,6 +9,7 @@ from backend import orchestrator
 from backend.config import FRONTEND_DIST
 from backend.game.engine import GameError
 from datetime import datetime
+from typing import Literal
 
 from backend.game import quiz
 from backend.models import (
@@ -16,13 +17,14 @@ from backend.models import (
     ChatRequest,
     MoveRequest,
     NewSessionRequest,
+    PreLink,
     QuizResult,
     QuizSubmission,
     SessionView,
     TurnResponse,
 )
 from backend.safety import clean_player_text
-from backend.usage import find_pre, log_study, session_totals
+from backend.usage import find_pre, log_study, pre_question_counts, session_totals
 
 app = FastAPI(title="GTiA: Game Theory in Action")
 app.add_middleware(
@@ -77,29 +79,44 @@ async def usage(session_id: str) -> dict:
 # ---------- before/after understanding check (no LLM) ----------
 
 @app.get("/api/quiz")
-async def get_quiz() -> dict:
-    return {"scenario": quiz.SCENARIO, "questions": quiz.public_questions()}
+async def get_quiz(phase: Literal["pre", "post"] = "post") -> dict:
+    """Pre: ONE rotating question. Post: all 5."""
+    ids = [quiz.pick_pre_question(pre_question_counts())] if phase == "pre" else None
+    return {"scenario": quiz.SCENARIO, "questions": quiz.public_questions(ids)}
 
 
 @app.post("/api/quiz", response_model=QuizResult)
 async def submit_quiz(body: QuizSubmission) -> QuizResult:
-    n_opts = [len(q.options) for q in quiz.QUESTIONS]
-    if any(a is not None and not 0 <= a < n for a, n in zip(body.answers, n_opts)):
-        raise GameError("One of those answers isn't a valid option.", status=422)
+    expected = 1 if body.phase == "pre" else len(quiz.QUESTIONS)
+    if len(body.answers) != expected or any(qid not in quiz.BY_ID for qid in body.answers):
+        raise GameError(f"The {body.phase}-check needs answers to exactly {expected} known question(s).", status=422)
+    for qid, a in body.answers.items():
+        if a is not None and not 0 <= a < len(quiz.BY_ID[qid].options):
+            raise GameError("One of those answers isn't a valid option.", status=422)
+
     score, results = quiz.grade(body.answers)
+    correct = {r["id"]: r["correct"] for r in results}
     feedback = clean_player_text(body.feedback)[:500] if body.feedback else None
     pre = find_pre(body.participant_id) if body.phase == "post" else None
-    minutes = None
+    minutes, link = None, None
     if pre:
         minutes = round((datetime.now().astimezone() - datetime.fromisoformat(pre["ts"])).total_seconds() / 60, 1)
+        qid = pre["asked"][0]
+        link = PreLink(
+            question_id=qid,
+            concept=quiz.BY_ID[qid].concept,
+            correct_before=pre["correct"][qid],
+            correct_after=correct.get(qid, False),
+        )
     log_study(
         {
             "participant_id": body.participant_id,
             "phase": body.phase,
+            "asked": list(body.answers),
+            "answers": body.answers,
+            "correct": correct,
             "score": score,
             "total": len(results),
-            "answers": body.answers,
-            "correct": [r["correct"] for r in results],
             "confidence": body.confidence,
             "rating": body.rating,
             "feedback": feedback,
@@ -108,15 +125,7 @@ async def submit_quiz(body: QuizSubmission) -> QuizResult:
             "minutes_since_pre": minutes,
         }
     )
-    return QuizResult(
-        phase=body.phase,
-        score=score,
-        total=len(results),
-        results=results,
-        pre_score=pre["score"] if pre else None,
-        pre_confidence=pre["confidence"] if pre else None,
-        minutes_since_pre=minutes,
-    )
+    return QuizResult(phase=body.phase, score=score, total=len(results), results=results, pre=link, minutes_since_pre=minutes)
 
 
 # Serve the prebuilt frontend (committed to the repo) so graders only need Python.

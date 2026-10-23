@@ -2,8 +2,10 @@
 
     .venv/bin/python scripts/study_summary.py
 
-Reads output/user_study.jsonl and writes output/user_study_summary.md. Only participants with BOTH
-a pre and a post check are counted in the before/after comparison.
+Reads output/user_study.jsonl (one line per check submitted) and writes
+output/user_study_summary.md: headline numbers, a per-question table, and consented quotes.
+
+Learning gain = the ONE question each player saw before the game, answered again after the game.
 """
 from __future__ import annotations
 
@@ -17,56 +19,54 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from backend.game.quiz import QUESTIONS  # noqa: E402
 from backend.usage import STUDY_LOG  # noqa: E402
 
-OUT = STUDY_LOG.parent / "user_study_summary.md"
+MD_OUT = STUDY_LOG.parent / "user_study_summary.md"
+
+
+def pct(xs: list[bool]) -> str:
+    return f"{100 * mean(xs):.0f}%" if xs else "–"
 
 
 def main() -> None:
     rows = [json.loads(line) for line in STUDY_LOG.read_text().splitlines()] if STUDY_LOG.exists() else []
     pre = {r["participant_id"]: r for r in rows if r["phase"] == "pre"}
     post = {r["participant_id"]: r for r in rows if r["phase"] == "post"}
+    # ---- Markdown summary ----
     paired = [(pre[p], post[p]) for p in post if p in pre]
-    n = len(paired)
     lines = ["# User study: before/after understanding check", ""]
-    lines.append(f"- Pre-checks: {len(pre)} · post-checks: {len(post)} · **paired participants: {n}**")
-    if not n:
-        lines.append("\nNo paired results yet. Have testers play Door 1 from the hallway (not `?play=`).")
-    else:
-        b = [a["score"] for a, _ in paired]
-        f = [z["score"] for _, z in paired]
-        gains = [y - x for x, y in zip(b, f)]
-        conf_b = [a["confidence"] for a, _ in paired]
-        conf_a = [z["confidence"] for _, z in paired]
-        ratings = [z["rating"] for _, z in paired if z.get("rating")]
-        minutes = [z["minutes_since_pre"] for _, z in paired if z.get("minutes_since_pre") is not None]
-        total = paired[0][0]["total"]
+    lines.append(f"- Players who started: {len(pre)} · finished the after-check: {len(post)} · **paired: {len(paired)}**")
+    if paired:
+        before = [a["correct"][a["asked"][0]] for a, _ in paired]
+        after = [z["correct"].get(a["asked"][0], False) for a, z in paired]
         lines += [
-            f"- Mean score: **{mean(b):.1f}/{total} → {mean(f):.1f}/{total}** (mean gain {mean(gains):+.1f}; "
-            f"{sum(g > 0 for g in gains)}/{n} improved, {sum(g < 0 for g in gains)}/{n} dropped)",
-            f"- Confidence explaining the PD (1–5): {mean(conf_b):.1f} → {mean(conf_a):.1f}",
-            f"- Usefulness rating (1–5): {mean(ratings):.1f}" if ratings else "- Usefulness rating: n/a",
-            f"- Time from pre-check to post-check: median {median(minutes):.0f} min" if minutes else "",
-            "",
-            "## Per question (% correct before → after)",
-            "",
-            "| Concept | Question | Before | After |",
-            "|---|---|---|---|",
+            f"- **Same question, before → after: {pct(before)} → {pct(after)} correct** "
+            f"({sum((not b) and c for b, c in zip(before, after))} of {len(paired)} went from wrong/not sure to right)",
+            f"- After-check score (all 5 questions): mean {mean(z['score'] for _, z in paired):.1f}/5",
         ]
-        for i, q in enumerate(QUESTIONS):
-            before = mean(a["correct"][i] for a, _ in paired) * 100
-            after = mean(z["correct"][i] for _, z in paired) * 100
-            lines.append(f"| {q.concept} | {q.id} | {before:.0f}% | {after:.0f}% |")
-        lines += ["", "## Participants", "", "| Participant | Before | After | Confidence | Rating | Minutes |", "|---|---|---|---|---|---|"]
-        for a, z in paired:
+        ratings = [z["rating"] for _, z in paired if z.get("rating")]
+        conf = [z["confidence"] for _, z in paired if z.get("confidence")]
+        minutes = [z["minutes_since_pre"] for _, z in paired if z.get("minutes_since_pre") is not None]
+        if ratings:
+            lines.append(f"- Usefulness (1–5): mean {mean(ratings):.1f}")
+        if conf:
+            lines.append(f"- Confidence explaining the PD after playing (1–5): mean {mean(conf):.1f}")
+        if minutes:
+            lines.append(f"- Time from before-check to after-check: median {median(minutes):.0f} min")
+        lines += ["", "## Per question", "", "| Concept | Asked before (n) | Correct before | Same players after | All players after |", "|---|---|---|---|---|"]
+        for q in QUESTIONS:
+            group = [(a, z) for a, z in paired if a["asked"][0] == q.id]
+            all_after = [z["correct"][q.id] for z in post.values() if q.id in z["correct"]]
             lines.append(
-                f"| {a['participant_id'][:8]} | {a['score']} | {z['score']} | {a['confidence']}→{z['confidence']} | "
-                f"{z.get('rating') or '–'} | {z.get('minutes_since_pre') or '–'} |"
+                f"| {q.concept} ({q.id}) | {len(group)} | {pct([a['correct'][q.id] for a, _ in group])} | "
+                f"{pct([z['correct'][q.id] for _, z in group])} | {pct(all_after)} |"
             )
+    else:
+        lines.append("\nNo paired results yet. Testers should enter Door 1 from the hallway (or use `/?play=kimchi&check=1`).")
     quotes = [z["feedback"] for z in post.values() if z.get("feedback") and z.get("consent_quote")]
     if quotes:
         lines += ["", "## Quotes (consented)", ""] + [f"> {q}" for q in quotes]
-    OUT.write_text("\n".join(l for l in lines if l is not None) + "\n")
+    MD_OUT.write_text("\n".join(lines) + "\n")
     print("\n".join(lines))
-    print(f"\nWritten to {OUT}")
+    print(f"\nWrote {MD_OUT}")
 
 
 if __name__ == "__main__":

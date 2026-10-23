@@ -81,16 +81,15 @@ export interface QuizResult {
   score: number;
   total: number;
   results: QuizResultItem[];
-  pre_score: number | null;
-  pre_confidence: number | null;
+  pre: { question_id: string; concept: string; correct_before: boolean; correct_after: boolean } | null;
   minutes_since_pre: number | null;
 }
 
 export interface QuizSubmission {
   participant_id: string;
   phase: "pre" | "post";
-  answers: (number | null)[];
-  confidence: number;
+  answers: Record<string, number | null>; // question id -> option index (null = "Not sure")
+  confidence?: number | null;
   rating?: number | null;
   feedback?: string | null;
   consent_quote?: boolean;

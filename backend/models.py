@@ -113,12 +113,21 @@ class QuizSubmission(BaseModel):
 
     participant_id: str = Field(pattern=r"^[a-z0-9-]{6,40}$")
     phase: Literal["pre", "post"]
-    answers: list[int | None] = Field(min_length=5, max_length=5)
-    confidence: int = Field(ge=1, le=5, description="How confident are you explaining the PD to a friend? 1-5")
+    answers: dict[str, int | None] = Field(description="question id -> chosen option index (None = 'Not sure')")
+    confidence: int | None = Field(default=None, ge=1, le=5, description="Post only: confidence explaining the PD, 1-5")
     rating: int | None = Field(default=None, ge=1, le=5, description="Post only: how useful was the game? 1-5")
     feedback: str | None = Field(default=None, max_length=500)
     consent_quote: bool = False
     session_id: str | None = Field(default=None, max_length=40)
+
+
+class PreLink(BaseModel):
+    """The one question this player saw before the game, and how they did on it before vs after."""
+
+    question_id: str
+    concept: str
+    correct_before: bool
+    correct_after: bool
 
 
 class QuizResult(BaseModel):
@@ -126,8 +135,7 @@ class QuizResult(BaseModel):
     score: int
     total: int
     results: list[dict]
-    pre_score: int | None = None  # filled on "post" when this participant has a pre-check on file
-    pre_confidence: int | None = None
+    pre: PreLink | None = None  # filled on "post" when this participant has a pre-check on file
     minutes_since_pre: float | None = None
 
 

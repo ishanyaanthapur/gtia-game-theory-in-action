@@ -1,7 +1,7 @@
 // Player avatars: chibi anthropomorphic animal samurai, built from primitives.
 import { useRef } from "react";
 import { useFrame, type ThreeElements } from "@react-three/fiber";
-import type { Group } from "three";
+import type { Group, Mesh } from "three";
 import { AVATARS } from "./avatars";
 import type { AvatarId } from "../types";
 import { Ball, Box, Capsule, Cone, Cyl, Ring } from "./parts";
@@ -19,6 +19,9 @@ export function AnimalSamurai({ avatar, walking = false, bob = true, seated = fa
   const s = AVATARS[avatar];
   const body = useRef<Group>(null);
   const tail = useRef<Group>(null);
+  const bamboo = useRef<Group>(null);
+  const mouth = useRef<Mesh>(null);
+  const eats = avatar === "kimchi"; // Kimchi loves to eat: always munching a bamboo stalk
 
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
@@ -27,6 +30,11 @@ export function AnimalSamurai({ avatar, walking = false, bob = true, seated = fa
       const amp = walking ? 0.06 : bob ? 0.025 : 0;
       body.current.position.y = Math.abs(Math.sin(t * speed)) * amp;
       body.current.rotation.z = walking ? Math.sin(t * speed) * 0.06 : 0;
+    }
+    if (eats) {
+      const chew = Math.max(0, Math.sin(t * 7)); // quick bites with little pauses
+      if (mouth.current) mouth.current.scale.y = 0.35 + chew * 0.9;
+      if (bamboo.current) bamboo.current.position.y = 0.04 * chew;
     }
     if (tail.current) {
       const wag = s.tail === "wag" ? Math.sin(t * 9) * 0.5 : Math.sin(t * 1.6) * 0.25;
@@ -69,9 +77,31 @@ export function AnimalSamurai({ avatar, walking = false, bob = true, seated = fa
 
         {/* arms + paws */}
         <Capsule r={0.075} len={0.26} position={[-0.36, 0.62, 0.02]} rotation={[0, 0, 0.18]} color={s.limbs} />
-        <Capsule r={0.075} len={0.26} position={[0.36, 0.62, 0.02]} rotation={[0, 0, -0.18]} color={s.limbs} />
+        {!eats && <Capsule r={0.075} len={0.26} position={[0.36, 0.62, 0.02]} rotation={[0, 0, -0.18]} color={s.limbs} />}
         <Ball r={0.085} position={[-0.39, 0.45, 0.04]} color={s.limbs} />
-        <Ball r={0.085} position={[0.39, 0.45, 0.04]} color={s.limbs} />
+        {eats ? (
+          <>
+            {/* right arm raised, paw at the mouth holding a bamboo stalk */}
+            <Capsule r={0.075} len={0.24} position={[0.3, 0.8, 0.17]} rotation={[1.25, 0, 0.35]} color={s.limbs} />
+            <Ball r={0.085} position={[0.2, 0.92, 0.33]} color={s.limbs} />
+            <group position={[0.2, 0.92, 0.36]} rotation={[0.25, 0, 0.8]}>
+              <group ref={bamboo}>
+                <Cyl top={0.032} bottom={0.036} h={0.78} position={[0, -0.14, 0]} color="#5fa83a" />
+                {[-0.42, -0.18, 0.06].map((y) => (
+                  <Cyl key={y} top={0.04} bottom={0.04} h={0.025} position={[0, y, 0]} color="#3f7d22" />
+                ))}
+                {/* bitten tip at the mouth */}
+                <Cyl top={0.03} bottom={0.032} h={0.02} position={[0, 0.25, 0]} color="#d9f0a3" />
+                {/* leaves at the far end */}
+                {[-0.6, 0.2, 0.9].map((r) => (
+                  <Ball key={r} r={0.09} position={[0.05, -0.52, 0]} scale={[0.35, 1.6, 0.12]} rotation={[0, 0, r]} color="#4caf50" />
+                ))}
+              </group>
+            </group>
+          </>
+        ) : (
+          <Ball r={0.085} position={[0.39, 0.45, 0.04]} color={s.limbs} />
+        )}
 
         {/* katana at the left hip */}
         <group position={[-0.3, 0.5, -0.05]} rotation={[0.25, 0, 1.25]}>
@@ -94,6 +124,12 @@ export function AnimalSamurai({ avatar, walking = false, bob = true, seated = fa
           <Ball r={0.15} position={[0, -0.08, 0.27]} scale={[1.2, 0.85, 0.9]} color={s.muzzle} />
           <Ball r={0.045} position={[0, -0.02, 0.4]} scale={[1.3, 0.9, 1]} color={avatar === "yoshi" ? "#f472b6" : INK} />
           {avatar === "jujubee" && <Ball r={0.05} position={[0, -0.17, 0.36]} scale={[1, 0.7, 0.6]} color="#f472b6" />}
+          {eats && (
+            <mesh ref={mouth} position={[0, -0.15, 0.39]} scale={[1.4, 0.6, 0.6]}>
+              <sphereGeometry args={[0.04, 16, 16]} />
+              <meshToonMaterial color="#7f1d1d" />
+            </mesh>
+          )}
           {/* eyes */}
           {[-0.13, 0.13].map((x) => (
             <group key={x} position={[x, 0.05, 0.31]}>

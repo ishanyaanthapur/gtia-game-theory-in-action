@@ -73,3 +73,15 @@ def find_pre(participant_id: str) -> dict[str, Any] | None:
         if rec.get("participant_id") == participant_id and rec.get("phase") == "pre":
             pre = rec
     return pre
+
+
+def pre_question_counts() -> dict[str, int]:
+    """How many times each question has been asked in a pre-check (drives the rotation)."""
+    counts: dict[str, int] = {}
+    if STUDY_LOG.exists():
+        for line in STUDY_LOG.read_text().splitlines():
+            rec = json.loads(line)
+            if rec.get("phase") == "pre":
+                for qid in rec.get("asked", []):
+                    counts[qid] = counts.get(qid, 0) + 1
+    return counts

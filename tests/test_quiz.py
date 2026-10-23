@@ -8,7 +8,7 @@ from backend.game.quiz import QUESTIONS
 from backend.main import app
 
 PID = "test-participant-1"
-RIGHT = [q.answer for q in QUESTIONS]
+RIGHT = {q.id: q.answer for q in QUESTIONS}
 
 
 @pytest.fixture
@@ -19,42 +19,72 @@ def client(monkeypatch, tmp_path):
     return c
 
 
-def submit(client, **overrides):
-    body = {"participant_id": PID, "phase": "pre", "answers": [None] * 5, "confidence": 2, **overrides}
-    return client.post("/api/quiz", json=body)
+def rows(client):
+    return [json.loads(line) for line in (client.tmp_path / "study.jsonl").read_text().splitlines()]
+
+
+def pre_question(client) -> str:
+    qs = client.get("/api/quiz", params={"phase": "pre"}).json()["questions"]
+    assert len(qs) == 1
+    return qs[0]["id"]
 
 
 def test_questions_never_leak_answers(client):
-    qs = client.get("/api/quiz").json()["questions"]
+    qs = client.get("/api/quiz", params={"phase": "post"}).json()["questions"]
     assert len(qs) == 5
     assert all("answer" not in q and "explanation" not in q for q in qs)
 
 
-def test_pre_then_post_reports_learning_gain(client):
-    pre = submit(client, answers=[1, None, 0, 0, None]).json()
-    assert pre["score"] == 1 and pre["pre_score"] is None
-    post = submit(client, phase="post", answers=RIGHT, confidence=5, rating=4, feedback="Loved Tung Tung Tung Sahur", consent_quote=True).json()
-    assert post["score"] == 5 and post["pre_score"] == 1 and post["pre_confidence"] == 2
-    rows = [json.loads(line) for line in (client.tmp_path / "study.jsonl").read_text().splitlines()]
-    assert [r["phase"] for r in rows] == ["pre", "post"]
-    assert rows[1]["feedback"] == "Loved Tung Tung Tung Sahur" and rows[1]["consent_quote"] is True
+def test_pre_check_rotates_through_all_questions(client):
+    seen = []
+    for i in range(len(QUESTIONS)):
+        qid = pre_question(client)
+        seen.append(qid)
+        client.post("/api/quiz", json={"participant_id": f"rot-{i:04d}", "phase": "pre", "answers": {qid: None}})
+    assert sorted(seen) == sorted(RIGHT)  # each question asked exactly once before any repeats
 
 
-def test_invalid_option_index_rejected(client):
-    assert submit(client, answers=[9, 0, 0, 0, 0]).status_code == 422
+def test_pre_then_post_links_the_same_question(client):
+    qid = pre_question(client)
+    wrong = (RIGHT[qid] + 1) % 3
+    pre = client.post("/api/quiz", json={"participant_id": PID, "phase": "pre", "answers": {qid: wrong}}).json()
+    assert pre["score"] == 0 and pre["total"] == 1
+    post = client.post(
+        "/api/quiz",
+        json={"participant_id": PID, "phase": "post", "answers": RIGHT, "confidence": 5, "rating": 4,
+              "feedback": "Loved Tung Tung Tung Sahur", "consent_quote": True},
+    ).json()
+    assert post["score"] == 5
+    assert post["pre"]["question_id"] == qid
+    assert post["pre"]["correct_before"] is False and post["pre"]["correct_after"] is True
+    r = rows(client)
+    assert [x["phase"] for x in r] == ["pre", "post"]
+    assert r[0]["asked"] == [qid] and r[0]["confidence"] is None
+    assert r[1]["feedback"] == "Loved Tung Tung Tung Sahur" and r[1]["consent_quote"] is True
 
 
-def test_wrong_number_of_answers_rejected(client):
-    assert submit(client, answers=[0, 0]).status_code == 422
+def test_pre_check_must_be_exactly_one_question(client):
+    r = client.post("/api/quiz", json={"participant_id": PID, "phase": "pre", "answers": RIGHT})
+    assert r.status_code == 422
+
+
+def test_post_check_must_answer_all_five(client):
+    r = client.post("/api/quiz", json={"participant_id": PID, "phase": "post", "answers": {QUESTIONS[0].id: 1}})
+    assert r.status_code == 422
+
+
+def test_unknown_question_or_option_rejected(client):
+    assert client.post("/api/quiz", json={"participant_id": PID, "phase": "pre", "answers": {"made_up": 0}}).status_code == 422
+    assert client.post("/api/quiz", json={"participant_id": PID, "phase": "pre", "answers": {QUESTIONS[0].id: 9}}).status_code == 422
 
 
 def test_participant_id_must_be_anonymous_token(client):
-    assert submit(client, participant_id="Jane Doe <script>").status_code == 422
+    r = client.post("/api/quiz", json={"participant_id": "Jane Doe <script>", "phase": "pre", "answers": {QUESTIONS[0].id: 0}})
+    assert r.status_code == 422
 
 
 def test_feedback_is_cleaned_and_capped(client):
-    r = submit(client, phase="post", rating=3, feedback="<b>hi</b>" + "x" * 600)
-    assert r.status_code == 422  # over 500 chars
-    submit(client, phase="post", rating=3, feedback="<b>hi</b>")
-    row = json.loads((client.tmp_path / "study.jsonl").read_text().splitlines()[-1])
-    assert "<" not in row["feedback"]
+    body = {"participant_id": PID, "phase": "post", "answers": RIGHT, "rating": 3}
+    assert client.post("/api/quiz", json={**body, "feedback": "x" * 600}).status_code == 422
+    client.post("/api/quiz", json={**body, "feedback": "<b>hi</b>"})
+    assert "<" not in rows(client)[-1]["feedback"]

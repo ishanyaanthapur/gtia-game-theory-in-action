@@ -37,22 +37,20 @@ Shortcuts for demos and screenshots:
 
 ## Before/after understanding check (user study)
 
-Players who enter Door 1 from the hallway first answer 5 multiple-choice questions on the
-Prisoner's Dilemma. The questions cover best responses, dominant strategy, Nash equilibrium, and
-why it's a dilemma. Each question has a "Not sure" option, and there's a 1–5 confidence rating.
-
-After the debrief, players answer the same questions again, rate the game's usefulness, and can
-leave a quote if they opt in. They then see their before vs. after score.
-
-- Results go to `output/user_study.jsonl`, keyed by a random ID. No names are stored.
-- Grading is done in code, so the check costs no tokens.
-- `.venv/bin/python scripts/study_summary.py` writes `output/user_study_summary.md` with the mean
-  gain, the per-question % correct, the confidence change, and consented quotes.
+- **Before:** players who enter Door 1 from the hallway answer **one** multiple-choice question. The
+  server rotates through 5 questions, picking the one asked least often, so each concept gets
+  covered. "Not sure" is always an option.
+- **After the debrief:** players answer all 5 questions (including the one they saw before), give
+  a 1–5 confidence and usefulness rating, and can leave an optional quote with consent.
+- **Learning gain:** the same question for the same player, before vs. after.
+- **Storage:** results are appended to `output/user_study.jsonl` under a random ID, with no names.
+  Grading is done in code, so the check costs no tokens.
+- **Summary:** `.venv/bin/python scripts/study_summary.py` writes `output/user_study_summary.md`.
 
 ## Other commands
 
 ```bash
-.venv/bin/python -m pytest -q              # 59 offline tests (engine, safety, quiz), no API key needed
+.venv/bin/python -m pytest -q              # 61 offline tests (engine, safety, quiz), no API key needed
 .venv/bin/python scripts/smoke_run.py      # one full game against the real agents → output/smoke_run.md
 ```
 

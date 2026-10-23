@@ -336,3 +336,29 @@ tokens. The token meter shows about 37K input for a browser game with one cop ch
 - **Naming:** Tung Tung Tung Sahur is always written in full (he/him) in the UI, the prompts, and the docs.
 - **Prompt caching:** after these prompt changes, the cop's static prefix is long enough to cache
   (1,031 cached input tokens seen).
+
+---
+
+## 12. Changes after playtesting (Oct 23, continued)
+- **Before-check:** one rotating question (least-asked first), with no confidence rating.
+- **After-check:** all 5 questions plus confidence and usefulness ratings, and an optional
+  consented quote.
+- **Results screen:** "<concept>: Before ✗ → After ✓", then the overall after-score with an
+  explanation for each question.
+- **Kimchi** has a mouth and chews a bamboo stalk (animated).
+
+## Report notes: where the data lives
+Everything is append-only **JSON Lines** files in `output/`, one JSON object per line. There's no
+database server, so nothing extra to install and the 10-minute run rule stays easy to meet.
+
+| File | One line = | Key fields |
+|---|---|---|
+| `output/token_log.jsonl` | one agent run | ts, session_id, agent, purpose, requests, input_tokens, cached_input_tokens, output_tokens, latency_ms |
+| `output/audit_trail.jsonl` | one game/safety event | ts, session_id, event (agent_output, round_resolved, cell_answer, partner_override, injection_attempt, provider_content_filter, …), detail |
+| `output/user_study.jsonl` | one before- or after-check | ts, participant_id (random UUID), phase, asked, answers {question_id: option or null}, correct {question_id: bool}, score, total, confidence, rating, feedback, consent_quote, session_id, minutes_since_pre |
+
+- **Game sessions** live in memory (`SessionStore`, capped at 200) and are lost on restart. That's
+  fine for a demo.
+- **Pre and post rows** are linked by `participant_id`. Game rows are linked to tokens and audit
+  events by `session_id`.
+- **Database question:** open, to discuss. Do we move these logs to SQLite?
