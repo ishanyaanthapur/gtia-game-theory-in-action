@@ -7,3 +7,7 @@ __pycache__/
 frontend/node_modules/
 frontend/tsconfig.tsbuildinfo
 # Built frontend IS committed so graders only need Python: frontend/dist/ stays tracked.
+
+# Live user-study responses stay local; commit a frozen snapshot only when testing is done.
+output/user_study.jsonl
+output/user_study_summary.md
