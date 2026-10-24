@@ -208,6 +208,11 @@ async def answer_cell(session_id: str, player_years: int, partner_years: int) ->
         else ""
     )
     lesson = f" Lesson for this cell (teach exactly this): {CELL_LESSONS[(r.player_move, r.partner_move)]}."
+    filled = sum(c.revealed for c in session.view().matrix)
+    lesson += (
+        f" Progress: {filled} of 4 cells filled so far"
+        + (f", {4 - filled} still to discover. Do NOT say the matrix is complete." if filled < 4 else ", the matrix is complete.")
+    )
     if correct:
         prompt = f"CORRECT. Cell {cell} = ({r.player_years}, {r.partner_years}).{lesson}{nudge}"
         fallback = f"Correct! **{cell}** is ({r.player_years}, {r.partner_years})."

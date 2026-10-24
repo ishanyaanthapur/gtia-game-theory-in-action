@@ -95,3 +95,9 @@ export interface QuizSubmission {
   consent_quote?: boolean;
   session_id?: string | null;
 }
+
+export interface PayoffTable {
+  rows: string[]; // your move
+  cols: string[]; // Tung Tung Tung Sahur's move
+  cells: [number, number][][]; // years in jail (you, Tung Tung Tung Sahur)
+}

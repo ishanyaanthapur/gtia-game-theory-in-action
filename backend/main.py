@@ -81,8 +81,11 @@ async def usage(session_id: str) -> dict:
 @app.get("/api/quiz")
 async def get_quiz(phase: Literal["pre", "post"] = "post") -> dict:
     """Pre: ONE rotating question. Post: all 5."""
-    ids = [quiz.pick_pre_question(pre_question_counts())] if phase == "pre" else None
-    return {"scenario": quiz.SCENARIO, "questions": quiz.public_questions(ids)}
+    if phase == "pre":
+        ids = [quiz.pick_pre_question(pre_question_counts())]
+        return {"scenario": quiz.SCENARIO, "questions": quiz.public_questions(ids), "matrix": None}
+    # After the game the player has built the matrix, so show it (check v2).
+    return {"scenario": quiz.SCENARIO, "questions": quiz.public_questions(), "matrix": quiz.payoff_table()}
 
 
 @app.post("/api/quiz", response_model=QuizResult)
@@ -112,6 +115,7 @@ async def submit_quiz(body: QuizSubmission) -> QuizResult:
         {
             "participant_id": body.participant_id,
             "phase": body.phase,
+            "check_version": quiz.CHECK_VERSION,
             "asked": list(body.answers),
             "answers": body.answers,
             "correct": correct,

@@ -362,3 +362,20 @@ database server, so nothing extra to install and the 10-minute run rule stays ea
 - **Pre and post rows** are linked by `participant_id`. Game rows are linked to tokens and audit
   events by `session_id`.
 - **Database question:** open, to discuss. Do we move these logs to SQLite?
+
+---
+
+## 13. User test #1 (Oct 24): findings and fixes
+- **Tester `1e6e6020`** (Jujubee):
+  - Before-question (Best response) right the first time.
+  - Matrix cells 4/4 right on the first try.
+  - After-check 1/5, while rating confidence 5/5 and usefulness 5/5; took 9.6 min.
+  - Missed answers leaned toward the "best for both" option.
+  - Their feedback was not consented for quoting.
+- **Full logs:** `output/user_tests/2026-10-24_1e6e6020/` (study rows, game audit, tokens, transcript). Gitignored.
+- **Fix 1:** the after-check now shows the payoff matrix the player built. Rows carry
+  `check_version: 2`; tester #1 was v1, with no matrix.
+- **Fix 2:** the transcript showed the tutor saying "you've filled all four cells" after round 2.
+  The tutor now gets the exact progress ("N of 4 cells filled") and is told never to call the
+  matrix complete early.
+- **New:** `scripts/export_tester.py` bundles all logs per tester.

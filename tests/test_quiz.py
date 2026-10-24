@@ -88,3 +88,16 @@ def test_feedback_is_cleaned_and_capped(client):
     assert client.post("/api/quiz", json={**body, "feedback": "x" * 600}).status_code == 422
     client.post("/api/quiz", json={**body, "feedback": "<b>hi</b>"})
     assert "<" not in rows(client)[-1]["feedback"]
+
+
+def test_after_check_shows_matrix_but_before_check_does_not(client):
+    pre = client.get("/api/quiz", params={"phase": "pre"}).json()
+    post = client.get("/api/quiz", params={"phase": "post"}).json()
+    assert pre["matrix"] is None
+    assert post["matrix"]["cells"] == [[[1, 1], [3, 0]], [[0, 3], [2, 2]]]
+
+
+def test_rows_are_tagged_with_check_version(client):
+    qid = pre_question(client)
+    client.post("/api/quiz", json={"participant_id": PID, "phase": "pre", "answers": {qid: None}})
+    assert rows(client)[0]["check_version"] == 2

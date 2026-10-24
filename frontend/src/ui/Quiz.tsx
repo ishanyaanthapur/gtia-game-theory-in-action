@@ -1,8 +1,8 @@
 // Before/after understanding check. Before: ONE rotating question. After: all 5 + ratings.
 // Learning gain = that one question, before vs after, for the same player.
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { ApiError, api } from "../api";
-import type { QuizQuestion, QuizResult } from "../types";
+import type { PayoffTable, QuizQuestion, QuizResult } from "../types";
 
 const NOT_SURE = -1;
 
@@ -17,6 +17,7 @@ interface Props {
 export function Quiz({ phase, participantId, sessionId, onDone, onSkip }: Props) {
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [scenario, setScenario] = useState("");
+  const [matrix, setMatrix] = useState<PayoffTable | null>(null);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [confidence, setConfidence] = useState<number | null>(null);
   const [rating, setRating] = useState<number | null>(null);
@@ -26,7 +27,7 @@ export function Quiz({ phase, participantId, sessionId, onDone, onSkip }: Props)
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
-    api.quiz(phase).then((d) => (setQuestions(d.questions), setScenario(d.scenario))).catch(() => setError("Couldn't load the questions. Is the server running?"));
+    api.quiz(phase).then((d) => (setQuestions(d.questions), setScenario(d.scenario), setMatrix(d.matrix))).catch(() => setError("Couldn't load the questions. Is the server running?"));
   }, []);
 
   const complete = questions.length > 0 && questions.every((q) => q.id in answers) && (phase === "pre" || (confidence !== null && rating !== null));
@@ -69,6 +70,8 @@ export function Quiz({ phase, participantId, sessionId, onDone, onSkip }: Props)
             {scenario}
           </div>
         )}
+
+        {matrix && <MatrixCard table={matrix} />}
 
         {questions.map((q, i) => (
           <fieldset key={q.id} className="quiz-q">
@@ -120,6 +123,31 @@ export function Quiz({ phase, participantId, sessionId, onDone, onSkip }: Props)
           </button>
         </div>
         <p className="fine">Anonymous: we store your answers with a random ID, never your name.</p>
+      </div>
+    </div>
+  );
+}
+
+function MatrixCard({ table }: { table: PayoffTable }) {
+  return (
+    <div className="quiz-matrix">
+      <b>The payoff matrix you built</b>
+      <small>Years in jail as (you, Tung Tung Tung Sahur). Lower is better.</small>
+      <div className="matrix">
+        <div className="head" />
+        {table.cols.map((c) => (
+          <div key={c} className="head">Tung Tung Tung Sahur: {c}</div>
+        ))}
+        {table.rows.map((r, i) => (
+          <Fragment key={r}>
+            <div className="head row">You: {r}</div>
+            {table.cells[i].map(([you, them], j) => (
+              <div key={j} className="cell">
+                (<span className="you">{you}</span>, <span className="them">{them}</span>)
+              </div>
+            ))}
+          </Fragment>
+        ))}
       </div>
     </div>
   );

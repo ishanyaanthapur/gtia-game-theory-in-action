@@ -11,3 +11,4 @@ frontend/tsconfig.tsbuildinfo
 # Live user-study responses stay local; commit a frozen snapshot only when testing is done.
 output/user_study*.jsonl
 output/user_study_summary.md
+output/user_tests/

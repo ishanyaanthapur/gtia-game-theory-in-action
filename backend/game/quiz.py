@@ -8,6 +8,11 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
+from backend.game.payoffs import PAYOFFS, Move
+
+# v1: after-check without the payoff matrix (tester #1, Oct 24). v2: after-check shows the full matrix.
+CHECK_VERSION = 2
+
 SCENARIO = (
     "You and a partner are arrested and questioned in separate rooms. Each of you can STAY SILENT or "
     "CONFESS. If you confess and your partner stays silent, you go free (0 years) and they get 3 years "
@@ -110,3 +115,13 @@ def grade(answers: dict[str, int | None]) -> tuple[int, list[dict]]:
             }
         )
     return sum(r["correct"] for r in results), results
+
+
+def payoff_table() -> dict:
+    """The full matrix, shown on the after-check (v2+). Years in jail as (you, partner); lower is better."""
+    label = {Move.SILENT: "Stay silent", Move.CONFESS: "Confess"}
+    return {
+        "rows": [label[m] for m in Move],
+        "cols": [label[m] for m in Move],
+        "cells": [[list(PAYOFFS[(r, c)]) for c in Move] for r in Move],
+    }

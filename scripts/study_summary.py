@@ -6,6 +6,7 @@ Reads output/user_study.jsonl (one line per check submitted) and writes
 output/user_study_summary.md: headline numbers, a per-question table, and consented quotes.
 
 Learning gain = the ONE question each player saw before the game, answered again after the game.
+Check v1 (no payoff matrix on the after-check) = tester #1 only; v2+ shows the matrix.
 """
 from __future__ import annotations
 
@@ -79,16 +80,16 @@ def main() -> None:
         lines.append("\nNo paired results yet. Testers should enter Door 1 from the hallway (or use `/?play=kimchi&check=1`).")
     # ---- one row per tester: progress from before -> game -> after ----
     if pre or post:
-        head = "| Tester | Before question | Right first time? | Same question after | " + " | ".join(q.concept for q in QUESTIONS)
+        head = "| Tester | Check v | Before question | Right first time? | Same question after | " + " | ".join(q.concept for q in QUESTIONS)
         lines += ["", "## Per tester", "", head + " | After score | Matrix cells right on 1st try | Confidence | Useful | Min |",
-                  "|" + "---|" * (10 + len(QUESTIONS) - 1)]
+                  "|" + "---|" * (11 + len(QUESTIONS) - 1)]
         for pid in dict.fromkeys([*pre, *post]):
             a, z = pre.get(pid), post.get(pid)
             qid = a["asked"][0] if a else None
             right, tried = matrix_first_try((z or {}).get("session_id"))
             per_q = " | ".join(mark(z["correct"].get(q.id)) if z else "–" for q in QUESTIONS)
             lines.append(
-                f"| {pid[:8]} | {BY_ID[qid].concept if qid else '–'} | {mark(a['correct'][qid]) if a else '–'} | "
+                f"| {pid[:8]} | v{(a or z).get('check_version', 1)} | {BY_ID[qid].concept if qid else '–'} | {mark(a['correct'][qid]) if a else '–'} | "
                 f"{mark(z['correct'].get(qid)) if a and z else '–'} | {per_q} | {z['score'] if z else '–'}/5 | "
                 f"{f'{right}/{tried}' if tried else '–'} | {(z or {}).get('confidence') or '–'} | {(z or {}).get('rating') or '–'} | "
                 f"{(z or {}).get('minutes_since_pre') or '–'} |"
