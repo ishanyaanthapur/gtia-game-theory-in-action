@@ -16,14 +16,30 @@ from statistics import mean, median
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from backend.game.quiz import QUESTIONS  # noqa: E402
-from backend.usage import STUDY_LOG  # noqa: E402
+from backend.game.quiz import BY_ID, QUESTIONS  # noqa: E402
+from backend.usage import AUDIT_LOG, STUDY_LOG  # noqa: E402
 
 MD_OUT = STUDY_LOG.parent / "user_study_summary.md"
 
 
 def pct(xs: list[bool]) -> str:
     return f"{100 * mean(xs):.0f}%" if xs else "–"
+
+
+def matrix_first_try(session_id: str | None) -> tuple[int, int]:
+    """(cells right on the first attempt, cells attempted) for one game, from the audit log."""
+    if not session_id or not AUDIT_LOG.exists():
+        return 0, 0
+    first = {}
+    for line in AUDIT_LOG.read_text().splitlines():
+        e = json.loads(line)
+        if e.get("session_id") == session_id and e.get("event") == "cell_answer" and e.get("attempt") == 1:
+            first[e["round"]] = e["correct"]
+    return sum(first.values()), len(first)
+
+
+def mark(ok: bool | None) -> str:
+    return "–" if ok is None else ("✓" if ok else "✗")
 
 
 def main() -> None:
@@ -61,6 +77,22 @@ def main() -> None:
             )
     else:
         lines.append("\nNo paired results yet. Testers should enter Door 1 from the hallway (or use `/?play=kimchi&check=1`).")
+    # ---- one row per tester: progress from before -> game -> after ----
+    if pre or post:
+        head = "| Tester | Before question | Right first time? | Same question after | " + " | ".join(q.concept for q in QUESTIONS)
+        lines += ["", "## Per tester", "", head + " | After score | Matrix cells right on 1st try | Confidence | Useful | Min |",
+                  "|" + "---|" * (10 + len(QUESTIONS) - 1)]
+        for pid in dict.fromkeys([*pre, *post]):
+            a, z = pre.get(pid), post.get(pid)
+            qid = a["asked"][0] if a else None
+            right, tried = matrix_first_try((z or {}).get("session_id"))
+            per_q = " | ".join(mark(z["correct"].get(q.id)) if z else "–" for q in QUESTIONS)
+            lines.append(
+                f"| {pid[:8]} | {BY_ID[qid].concept if qid else '–'} | {mark(a['correct'][qid]) if a else '–'} | "
+                f"{mark(z['correct'].get(qid)) if a and z else '–'} | {per_q} | {z['score'] if z else '–'}/5 | "
+                f"{f'{right}/{tried}' if tried else '–'} | {(z or {}).get('confidence') or '–'} | {(z or {}).get('rating') or '–'} | "
+                f"{(z or {}).get('minutes_since_pre') or '–'} |"
+            )
     quotes = [z["feedback"] for z in post.values() if z.get("feedback") and z.get("consent_quote")]
     if quotes:
         lines += ["", "## Quotes (consented)", ""] + [f"> {q}" for q in quotes]
