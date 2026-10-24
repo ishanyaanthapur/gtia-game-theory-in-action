@@ -60,7 +60,7 @@ Shortcuts for demos and screenshots:
 |---|---|---|
 | Game engine | `backend/game/engine.py` | State machine; computes every sentence and checks every matrix answer. No LLM. |
 | Coverage controller | `backend/game/coverage.py` | Constrains the partner's move so 4 rounds cover all 4 cells |
-| Cop agent | `backend/agents/cop.py`, `prompts/cop.md` | Detective Byte: intro, chat, announces the engine's verdict |
+| Cop agent | `backend/agents/cop.py`, `prompts/cop.md` | Detective Zhou: intro, chat, announces the engine's verdict |
 | Partner agent | `backend/agents/partner.py`, `prompts/partner.md` | Tung Tung Tung Sahur: picks a move from the allowed set (an output validator enforces it) |
 | Tutor agent | `backend/agents/tutor.py`, `prompts/tutor.md` | Nash-sensei: asks for each cell, gives hints, nudges, runs the debrief |
 | Orchestrator | `backend/orchestrator.py` | Turns player actions into engine updates and agent calls, with fallbacks |
@@ -74,7 +74,7 @@ All agents are `pydantic_ai.Agent`s with typed Pydantic outputs and read-only to
 React + three.js (`@react-three/fiber`). Every character is built from primitives in
 `frontend/src/characters/`:
 - **The player:** Yoshi, a tabby cat; Jujubee, a golden dog; or Kimchi, a panda. All are samurai.
-- **Detective Byte:** the cop.
+- **Detective Zhou:** the cop.
 - **Tung Tung Tung Sahur:** the partner.
 - **Nash-sensei:** the tutor, a kitsune sage.
 

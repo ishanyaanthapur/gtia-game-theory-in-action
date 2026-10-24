@@ -18,7 +18,7 @@
 | 0 | **Pre-check** | 3-question understanding check (about 60 s), logged for Impact. |
 | 1 | **Avatar select** | Pick Jujubee, Yoshi, or Kimchi: three low-poly characters, each with its own color and shape. |
 | 2 | **Hallway** | Arrow keys or WASD to walk, or click a door. Door 1 is open; Doors 2–3 are locked teasers. |
-| 3 | **Interrogation room** | The cop (Detective Byte) explains the case: *"You and Tung Tung Tung Sahur broke into Sam Altman's GPU vault and stole 10,000 H100s."* You can type up to 3 messages to the cop, then choose **Stay Silent** or **Confess (blame Tung Tung)**. |
+| 3 | **Interrogation room** | The cop (Detective Zhou) explains the case: *"You and Tung Tung Tung Sahur broke into Sam Altman's GPU vault and stole 10,000 H100s."* You can type up to 3 messages to the cop, then choose **Stay Silent** or **Confess (blame Tung Tung)**. |
 | 4 | **Partner moves** | Tung Tung Tung Sahur (the AI partner) picks a move, with one in-character line. |
 | 5 | **Verdict** | The cop announces the sentence. The game engine computes it, not the LLM. |
 | 6 | **Cells** | Camera cuts to the jail cells. You're behind bars if you got time, and Tung Tung sits in the next cell if they did too. |
@@ -65,7 +65,7 @@ simultaneity of a real PD, but it's a deliberate trade-off in favour of teaching
 
 | Agent | Role | Tools | Output model |
 |---|---|---|---|
-| **Cop** (Detective Byte) | Interrogates you, answers your questions in character, announces the verdict the engine computed | `get_case_file()`, `get_round_history()` | `CopLine(text, mood)` |
+| **Cop** (Detective Zhou) | Interrogates you, answers your questions in character, announces the verdict the engine computed | `get_case_file()`, `get_round_history()` | `CopLine(text, mood)` |
 | **Partner** (Tung Tung Tung Sahur) | Picks a move within the allowed set and says one taunting line | `get_round_history()`, `get_allowed_moves()` | `PartnerDecision(move: Literal["silent","confess"], line, reasoning)` plus an output validator |
 | **Tutor** (Nash-sensei) | Asks you to fill in the cell, gives hints on wrong answers, nudges you to switch strategy, runs the debrief | `get_matrix_progress()`, `check_cell(row, col, you, partner)` | `TutorReply(text, highlight_cell, show_matrix)` |
 
@@ -254,7 +254,7 @@ hakama-style lower body, a katana at the hip, and a hachimaki headband in a ligh
 ### NPCs
 | Character | Look |
 |---|---|
-| **Detective Byte** (cop) | Human American city cop: navy uniform, gold star badge, peaked cap, mustache, coffee cup in hand. Sits across the interrogation table under a hanging lamp. |
+| **Detective Zhou** (cop) | Human American city cop: navy uniform, gold star badge, peaked cap, mustache, coffee cup in hand. Sits across the interrogation table under a hanging lamp. |
 | **Tung Tung Tung Sahur** (partner) | Based on the 2025 Indonesian meme (a living *kentongan*, a wooden slit-drum): a **tall cylindrical wooden body** with visible grain, **huge round staring eyes**, a wide mouth, stick-thin arms and legs, **bare feet**, and a **baseball bat** in one hand. Seen through the interrogation-room window, then in the next cell. |
 | **Nash-sensei** (tutor) | **Kitsune sage**: a white/silver fox spirit in indigo robes with gold embroidery, **several glowing tails** (5–9, fanned out), a sage's staff with a small glowing orb, floating slightly. Appears in a swirl of **blue foxfire** (particle sprites). |
 
@@ -331,7 +331,7 @@ tokens. The token meter shows about 37K input for a browser game with one cop ch
 - **Dialogue** shows as click-through speech bubbles over the speaker's head: the cop, Tung Tung
   Tung Sahur in Room B, and Nash-sensei in the cells. Moves stay locked until the player has read
   every piece. The right panel is now a case transcript.
-- **The player sits** in a chair. Detective Byte stands, paces behind the table, and stops to face
+- **The player sits** in a chair. Detective Zhou stands, paces behind the table, and stops to face
   the player while talking.
 - **Naming:** Tung Tung Tung Sahur is always written in full (he/him) in the UI, the prompts, and the docs.
 - **Prompt caching:** after these prompt changes, the cop's static prefix is long enough to cache

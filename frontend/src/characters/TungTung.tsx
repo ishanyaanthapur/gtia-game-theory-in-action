@@ -10,13 +10,23 @@ const WOOD_DARK = "#8a5a2b";
 const BAT = "#e3c38f";
 const INK = "#111111";
 
-export function TungTung({ swinging = false, ...group }: ThreeElements["group"] & { swinging?: boolean }) {
+export function TungTung({
+  swinging = false,
+  scared = false,
+  ...group
+}: ThreeElements["group"] & { swinging?: boolean; scared?: boolean }) {
   const batArm = useRef<Group>(null);
   const root = useRef<Group>(null);
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
-    if (batArm.current) batArm.current.rotation.z = swinging ? -0.6 + Math.sin(t * 8) * 0.6 : -0.35 + Math.sin(t * 1.5) * 0.05;
-    if (root.current) root.current.position.y = swinging ? Math.abs(Math.sin(t * 8)) * 0.05 : 0;
+    if (batArm.current)
+      batArm.current.rotation.z = swinging ? -0.6 + Math.sin(t * 8) * 0.6 : scared ? -0.1 + Math.sin(t * 30) * 0.04 : -0.35 + Math.sin(t * 1.5) * 0.05;
+    if (root.current) {
+      root.current.position.y = swinging ? Math.abs(Math.sin(t * 8)) * 0.05 : 0;
+      // scared: nervous trembling
+      root.current.position.x = scared ? Math.sin(t * 38) * 0.012 : 0;
+      root.current.rotation.z = scared ? Math.sin(t * 23) * 0.015 : 0;
+    }
   });
 
   return (
@@ -36,18 +46,36 @@ export function TungTung({ swinging = false, ...group }: ThreeElements["group"] 
         ))}
         <Box size={[0.05, 0.4, 0.02]} position={[0.1, 0.75, 0.31]} color={WOOD_DARK} />
 
-        {/* huge staring eyes, brows, wide grin */}
+        {/* huge staring eyes + brows (scared: even wider, tiny pupils, worried brows) */}
         {[-0.13, 0.13].map((x) => (
           <group key={x} position={[x, 1.55, 0.27]}>
-            <Ball r={0.115} scale={[1, 1.15, 0.6]} color="#ffffff" />
-            <Ball r={0.05} position={[0, -0.01, 0.06]} color={INK} />
+            <Ball r={0.115} scale={scared ? [1.15, 1.35, 0.6] : [1, 1.15, 0.6]} color="#ffffff" />
+            <Ball r={scared ? 0.028 : 0.05} position={[0, -0.01, 0.065]} color={INK} />
             <Ball r={0.015} position={[0.02, 0.02, 0.1]} color="#ffffff" />
-            <Box size={[0.17, 0.035, 0.03]} position={[0, 0.17, 0.02]} rotation={[0, 0, x > 0 ? -0.2 : 0.2]} color={INK} />
+            <Box
+              size={[0.17, 0.035, 0.03]}
+              position={[0, scared ? 0.21 : 0.17, 0.02]}
+              rotation={[0, 0, (x > 0 ? -1 : 1) * (scared ? -0.35 : 0.2)]}
+              color={INK}
+            />
           </group>
         ))}
         <Ball r={0.035} position={[0, 1.4, 0.31]} color={WOOD_DARK} />
-        <Box size={[0.26, 0.05, 0.03]} position={[0, 1.28, 0.3]} color={INK} />
-        <Box size={[0.22, 0.03, 0.03]} position={[0, 1.26, 0.305]} color="#7f1d1d" />
+        {scared ? (
+          <>
+            {/* open "O" mouth of terror + sweat drops */}
+            <Ball r={0.07} position={[0, 1.25, 0.3]} scale={[0.8, 1.1, 0.4]} color={INK} />
+            <Ball r={0.04} position={[0, 1.22, 0.315]} scale={[0.8, 0.5, 0.3]} color="#7f1d1d" />
+            {[[-0.27, 1.62], [0.29, 1.5], [0.24, 1.72]].map(([x, y]) => (
+              <Ball key={x} r={0.035} position={[x, y, 0.2]} scale={[0.8, 1.3, 0.8]} color="#7dd3fc" emissive="#38bdf8" />
+            ))}
+          </>
+        ) : (
+          <>
+            <Box size={[0.26, 0.05, 0.03]} position={[0, 1.28, 0.3]} color={INK} />
+            <Box size={[0.22, 0.03, 0.03]} position={[0, 1.26, 0.305]} color="#7f1d1d" />
+          </>
+        )}
 
         {/* stick arms */}
         <Cyl top={0.03} bottom={0.03} h={0.55} position={[-0.42, 1.0, 0]} rotation={[0, 0, -0.5]} color={WOOD} />

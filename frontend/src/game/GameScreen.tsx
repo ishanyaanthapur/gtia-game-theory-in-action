@@ -12,9 +12,9 @@ import { splitPieces } from "./dialogue";
 import type { Speaker } from "../scenes/SpeechAnchor";
 import type { AvatarId, Message, Move, SessionView, TurnResponse, Usage } from "../types";
 
-type Cam = { position: [number, number, number]; target: [number, number, number] };
-const ROOM_CAM: Cam = { position: [2.9, 2.6, 4.9], target: [-0.9, 1.25, -1] };
-const CELLS_CAM: Cam = { position: [0, 3.0, 8.8], target: [0, 0.75, 0] };
+type Cam = { position: [number, number, number]; target: [number, number, number]; hfov: number };
+const ROOM_CAM: Cam = { position: [3.0, 2.6, 5.0], target: [-1.3, 1.2, -1], hfov: 76 };
+const CELLS_CAM: Cam = { position: [0, 3.0, 8.8], target: [0, 0.75, 0], hfov: 62 };
 
 const isNpc = (m: Message): m is Message & { speaker: Speaker } => m.speaker === "cop" || m.speaker === "partner" || m.speaker === "tutor";
 

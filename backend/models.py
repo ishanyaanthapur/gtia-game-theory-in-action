@@ -23,9 +23,9 @@ class Phase(StrEnum):
 # ---------- Agent outputs (pydantic-ai output_type) ----------
 
 class CopLine(BaseModel):
-    """What Detective Byte says next."""
+    """What Detective Zhou says next."""
 
-    text: str = Field(description="Detective Byte's line, in character. Markdown allowed. Max ~80 words.")
+    text: str = Field(description="Detective Zhou's line, in character. Markdown allowed. Max ~80 words.")
     mood: Literal["smug", "stern", "suspicious", "amused", "triumphant"] = "stern"
 
 

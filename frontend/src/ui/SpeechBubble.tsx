@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import Markdown from "react-markdown";
 import { anchors, type Speaker } from "../scenes/SpeechAnchor";
 
-const NAMES: Record<Speaker, string> = { cop: "Detective Byte", partner: "Tung Tung Tung Sahur", tutor: "Nash-sensei" };
+const NAMES: Record<Speaker, string> = { cop: "Detective Zhou", partner: "Tung Tung Tung Sahur", tutor: "Nash-sensei" };
 
 interface Props {
   speaker: Speaker;

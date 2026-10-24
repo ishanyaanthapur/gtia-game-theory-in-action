@@ -22,7 +22,7 @@ AGENT_FAILURES = (AgentRunError, ModelAPIError)
 
 
 FILTERED_COP_LINE = (
-    "*Detective Byte slowly closes his laptop.* Cute hacking attempt, but I don't take orders from suspects. "
+    "*Detective Zhou slowly closes his laptop.* Cute hacking attempt, but I don't take orders from suspects. "
     "The deal hasn't changed: **stay silent or confess?**"
 )
 
@@ -222,7 +222,7 @@ async def answer_cell(session_id: str, player_years: int, partner_years: int) ->
             f"WRONG. Attempt {r.cell_attempts} of 3. Cell {cell}. Player answered ({player_years}, {partner_years}). "
             f"The cop said: player {r.player_years}y, Tung Tung Tung Sahur {r.partner_years}y (do NOT state these numbers)."
         )
-        fallback = "Not quite. What did Detective Byte say each of you got? Your years go first."
+        fallback = "Not quite. What did Detective Zhou say each of you got? Your years go first."
     if session.phase == Phase.COMPLETE:
         # One combined call: react to the last answer in a sentence, then the full debrief.
         result_word = "correctly" if correct else "after a reveal"

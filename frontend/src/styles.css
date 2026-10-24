@@ -269,3 +269,17 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 .bubble-next:hover { filter: brightness(1.15); }
 .bubble .typing span { background: var(--c); }
 @keyframes pop { from { opacity: 0; transform: translateY(3px); } }
+
+/* ---------- "your move" attention arrow ---------- */
+.your-move {
+  display: flex; justify-content: center; align-items: center; gap: 12px; font-weight: 800; font-size: 1rem;
+  color: var(--purple-bright); text-shadow: 0 0 14px rgba(192, 132, 252, 0.7); animation: fadeIn 0.3s ease-out;
+}
+.your-move-arrow { display: inline-block; font-size: 1.5rem; animation: bounce 0.9s ease-in-out infinite; }
+.your-move-arrow:last-child { animation-delay: 0.15s; }
+@keyframes bounce { 0%, 100% { transform: translateY(-4px); } 50% { transform: translateY(6px); } }
+@keyframes fadeIn { from { opacity: 0; } }
+.moves.ready .move-btn:not(:disabled) { animation: glow 1.6s ease-in-out infinite; }
+.moves.ready .move-btn.silent:not(:disabled) { --glow: rgba(52, 211, 153, 0.55); }
+.moves.ready .move-btn.confess:not(:disabled) { --glow: rgba(248, 113, 113, 0.55); }
+@keyframes glow { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 22px 2px var(--glow); } }

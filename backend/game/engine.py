@@ -73,7 +73,7 @@ class GameSession:
     def register_cop_message(self) -> None:
         self._require_phase(Phase.INTERROGATION)
         if self.cop_messages_this_round >= MAX_COP_MESSAGES_PER_ROUND:
-            raise GameError("Detective Byte is done talking. Time to choose: stay silent or confess.", status=429)
+            raise GameError("Detective Zhou is done talking. Time to choose: stay silent or confess.", status=429)
         self.cop_messages_this_round += 1
 
     def validate_player_move(self, move: Move) -> None:

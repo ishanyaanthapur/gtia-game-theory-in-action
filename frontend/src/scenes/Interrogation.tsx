@@ -1,4 +1,4 @@
-// Interrogation room: Detective Byte across the table, Tung Tung Tung Sahur visible through the window.
+// Interrogation room: Detective Zhou across the table, Tung Tung Tung Sahur visible through the window.
 import { Label3D } from "./Label3D";
 import { AnimalSamurai } from "../characters/AnimalSamurai";
 import { Cop } from "../characters/Cop";
@@ -34,28 +34,38 @@ export function Interrogation({ avatar, copTalking }: { avatar: AvatarId; copTal
       </mesh>
       <Box size={[8, 3.5, 0.1]} position={[0, 1.75, -4]} color={WALL} />
       <Box size={[0.1, 3.5, 8]} position={[4, 1.75, 0]} color={WALL_DARK} />
-      {/* left wall with a one-way window into Tung Tung Tung Sahur's room */}
-      <Box size={[0.1, 3.5, 1.5]} position={[-4, 1.75, -3.25]} color={WALL_DARK} />
-      <Box size={[0.1, 3.5, 4.5]} position={[-4, 1.75, 1.75]} color={WALL_DARK} />
-      <Box size={[0.1, 1, 2]} position={[-4, 0.5, -1.5]} color={WALL_DARK} />
-      <Box size={[0.1, 1.1, 2]} position={[-4, 2.95, -1.5]} color={WALL_DARK} />
-      <mesh position={[-4, 1.7, -1.5]} rotation={[0, Math.PI / 2, 0]}>
-        <planeGeometry args={[2, 1.4]} />
-        <meshStandardMaterial color="#93c5fd" transparent opacity={0.12} />
+      {/* left wall: a big one-way observation window into Room B */}
+      <Box size={[0.1, 3.5, 0.6]} position={[-4, 1.75, -3.7]} color={WALL_DARK} />
+      <Box size={[0.1, 3.5, 3]} position={[-4, 1.75, 2.5]} color={WALL_DARK} />
+      <Box size={[0.1, 0.15, 4.4]} position={[-4, 0.075, -1.2]} color={WALL_DARK} />
+      <Box size={[0.1, 0.6, 4.4]} position={[-4, 3.2, -1.2]} color={WALL_DARK} />
+      <mesh position={[-4, 1.525, -1.2]} rotation={[0, Math.PI / 2, 0]}>
+        <planeGeometry args={[4.4, 2.75]} />
+        <meshStandardMaterial color="#93c5fd" transparent opacity={0.08} />
       </mesh>
-      <Label3D position={[-3.85, 2.75, -1.5]} title="Room B" subtitle="Tung Tung Tung Sahur" accent="#e3a86b" width={1.5} />
+      {/* window frame */}
+      <Box size={[0.14, 0.06, 4.5]} position={[-3.98, 2.9, -1.2]} color="#111827" />
+      <Box size={[0.14, 0.06, 4.5]} position={[-3.98, 0.15, -1.2]} color="#111827" />
+      <Box size={[0.14, 2.8, 0.06]} position={[-3.98, 1.52, -3.4]} color="#111827" />
+      <Box size={[0.14, 2.8, 0.06]} position={[-3.98, 1.52, 1.0]} color="#111827" />
+      <Label3D position={[-3.45, 3.18, -1.2]} title="Room B" subtitle="Tung Tung Tung Sahur" accent="#e3a86b" width={1.7} />
 
-      {/* Tung Tung Tung Sahur's room next door */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-6, 0, -1.5]}>
-        <planeGeometry args={[4, 4]} />
+      {/* Room B: a second cop grilling a very scared Tung Tung Tung Sahur */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-6, 0, -1]}>
+        <planeGeometry args={[4, 6]} />
         <meshStandardMaterial color="#2a1f1a" />
       </mesh>
-      <Box size={[0.1, 3.5, 4]} position={[-8, 1.75, -1.5]} color="#3a2a22" />
-      <pointLight position={[-6, 2.6, -1.5]} color="#ff9b6a" intensity={6} distance={5} />
-      <TungTung position={[-5.6, 0, -1.6]} rotation={[0, Math.PI / 2, 0]} scale={0.9} />
-      <group position={[-5.4, 0, -1.6]}>
-        <SpeechAnchor id="partner" offset={[0, 2.05, 0]} />
+      <Box size={[0.1, 3.5, 6]} position={[-8, 1.75, -1]} color="#3a2a22" />
+      <Box size={[4, 3.5, 0.1]} position={[-6, 1.75, -4]} color="#33251e" />
+      <Box size={[4, 3.5, 0.1]} position={[-6, 1.75, 2]} color="#33251e" />
+      <Cone r={0.28} h={0.22} position={[-5.5, 3.0, -1.5]} color="#1f2937" />
+      <pointLight position={[-5.5, 2.7, -1.2]} color="#ffb27a" intensity={9} distance={6} />
+      <pointLight position={[-4.6, 1.6, 0.2]} color="#c7d2fe" intensity={3} distance={4} />
+      <TungTung position={[-5.0, 0, -0.9]} rotation={[0, 0.7, 0]} scale={0.95} scared />
+      <group position={[-5.0, 0, -0.9]}>
+        <SpeechAnchor id="partner" offset={[0, 2.15, 0]} />
       </group>
+      <Cop variant="officer" talking position={[-5.3, 0, -2.75]} rotation={[0, 0.25, 0]} />
 
       {/* table + the player's chair */}
       <Box size={[2.4, 0.08, 1.3]} position={[0, 0.78, 0]} color="#4b5563" />
@@ -67,7 +77,7 @@ export function Interrogation({ avatar, copTalking }: { avatar: AvatarId; copTal
         {[-0.28, 0.28].flatMap((x) => [-0.25, 0.25].map((z) => <Box key={`${x}${z}`} size={[0.05, 0.4, 0.05]} position={[x, 0.2, z]} color="#111827" />))}
       </group>
 
-      {/* Detective Byte stands and paces behind the table */}
+      {/* Detective Zhou stands and paces behind the table */}
       <PacingCop talking={copTalking} />
 
       {/* the player, seated, back to camera */}

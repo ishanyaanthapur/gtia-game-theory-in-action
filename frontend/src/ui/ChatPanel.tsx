@@ -4,7 +4,7 @@ import { AVATARS } from "../characters/avatars";
 import type { AvatarId, Message, Move, SessionView, Usage } from "../types";
 
 const NAMES: Record<Message["speaker"], string> = {
-  cop: "Detective Byte",
+  cop: "Detective Zhou",
   partner: "Tung Tung Tung Sahur",
   tutor: "Nash-sensei",
   player: "You",
@@ -69,8 +69,15 @@ export function ChatPanel({ avatar, messages, view, busy, dialoguePending, usage
       </div>
 
       <div className="composer">
+        {interrogating && !busy && (
+          <div className="your-move" role="status">
+            <span className="your-move-arrow" aria-hidden>⬇</span>
+            <span>Your move: stay silent or confess?</span>
+            <span className="your-move-arrow" aria-hidden>⬇</span>
+          </div>
+        )}
         {interrogating && (
-          <div className="moves">
+          <div className={`moves ${!busy ? "ready" : ""}`}>
             {(["silent", "confess"] as Move[]).map((m) => {
               const locked = view?.locked_moves.includes(m);
               return (
@@ -89,14 +96,14 @@ export function ChatPanel({ avatar, messages, view, busy, dialoguePending, usage
           disabled={!canChat}
           placeholder={
             !view
-              ? "Detective Byte is getting ready…"
+              ? "Detective Zhou is getting ready…"
               : dialoguePending
               ? "Click Next on the speech bubble to keep going…"
               : !interrogating
               ? "Fill in the payoff matrix with Nash-sensei →"
               : chatLeft > 0
-                ? "Talk to Detective Byte… (Enter to send, Shift+Enter for a new line)"
-                : "Detective Byte is done talking. Make your choice."
+                ? "Talk to Detective Zhou… (Enter to send, Shift+Enter for a new line)"
+                : "Detective Zhou is done talking. Make your choice."
           }
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={onKey}

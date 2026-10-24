@@ -20,7 +20,7 @@ from backend.game.payoffs import Move  # noqa: E402
 from backend.models import Avatar, TurnResponse  # noqa: E402
 from backend.usage import session_totals  # noqa: E402
 
-NAMES = {"cop": "Detective Byte", "partner": "Tung Tung Tung Sahur", "tutor": "Nash-sensei", "player": "Player"}
+NAMES = {"cop": "Detective Zhou", "partner": "Tung Tung Tung Sahur", "tutor": "Nash-sensei", "player": "Player"}
 lines: list[str] = []
 
 

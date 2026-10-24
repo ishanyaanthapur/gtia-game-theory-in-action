@@ -1,4 +1,5 @@
-// Detective Byte: a human American city cop.
+// Human American city cops. variant "zhou" = Detective Zhou (cap, mustache, coffee);
+// variant "officer" = the second cop questioning Tung Tung Tung Sahur in Room B (short hair, clipboard).
 import { useRef } from "react";
 import { useFrame, type ThreeElements } from "@react-three/fiber";
 import type { Group } from "three";
@@ -10,13 +11,25 @@ const NAVY_DARK = "#172554";
 const GOLD = "#facc15";
 const HAIR = "#5b3a1e";
 
-export function Cop({ talking = false, ...group }: ThreeElements["group"] & { talking?: boolean }) {
+type Variant = "zhou" | "officer";
+const LOOKS: Record<Variant, { skin: string; hair: string; shirt: string; nose: string }> = {
+  zhou: { skin: "#e0ac7e", hair: "#5b3a1e", shirt: NAVY, nose: "#d4946a" },
+  officer: { skin: "#8d5524", hair: "#111111", shirt: "#2b4c9b", nose: "#7a4520" },
+};
+
+export function Cop({
+  talking = false,
+  variant = "zhou",
+  ...group
+}: ThreeElements["group"] & { talking?: boolean; variant?: Variant }) {
+  const { skin: SKIN, hair: HAIR, shirt, nose } = LOOKS[variant];
+  const zhou = variant === "zhou";
   const head = useRef<Group>(null);
   const arm = useRef<Group>(null);
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
     if (head.current) head.current.rotation.z = talking ? Math.sin(t * 6) * 0.05 : Math.sin(t * 0.8) * 0.02;
-    if (arm.current) arm.current.rotation.x = -0.9 + Math.sin(t * 0.7) * 0.08; // sips coffee
+    if (arm.current) arm.current.rotation.x = zhou ? -0.9 + Math.sin(t * 0.7) * 0.08 : -1.1 + Math.sin(t * 3) * (talking ? 0.25 : 0.05); // sips coffee / jabs clipboard
   });
 
   return (
@@ -27,23 +40,33 @@ export function Cop({ talking = false, ...group }: ThreeElements["group"] & { ta
       <Box size={[0.2, 0.1, 0.32]} position={[-0.15, 0.05, 0.06]} color="#0a0a0a" />
       <Box size={[0.2, 0.1, 0.32]} position={[0.15, 0.05, 0.06]} color="#0a0a0a" />
       {/* torso: uniform shirt, belt, badge, tie */}
-      <Box size={[0.62, 0.72, 0.36]} position={[0, 1.1, 0]} color={NAVY} />
+      <Box size={[0.62, 0.72, 0.36]} position={[0, 1.1, 0]} color={shirt} />
       <Box size={[0.64, 0.08, 0.38]} position={[0, 0.76, 0]} color="#111827" />
       <Box size={[0.08, 0.06, 0.39]} position={[0, 0.76, 0]} color={GOLD} />
       <Cyl top={0.055} bottom={0.055} h={0.02} segments={5} position={[-0.16, 1.28, 0.19]} rotation={[Math.PI / 2, 0, 0]} color={GOLD} />
       <Box size={[0.07, 0.38, 0.02]} position={[0, 1.18, 0.185]} color="#0f172a" />
       {/* shoulders + left arm resting */}
-      <Ball r={0.13} position={[-0.36, 1.38, 0]} color={NAVY} />
-      <Ball r={0.13} position={[0.36, 1.38, 0]} color={NAVY} />
-      <Capsule r={0.1} len={0.45} position={[-0.4, 1.1, 0.08]} rotation={[-0.4, 0, 0.1]} color={NAVY} />
+      <Ball r={0.13} position={[-0.36, 1.38, 0]} color={shirt} />
+      <Ball r={0.13} position={[0.36, 1.38, 0]} color={shirt} />
+      <Capsule r={0.1} len={0.45} position={[-0.4, 1.1, 0.08]} rotation={[-0.4, 0, 0.1]} color={shirt} />
       <Ball r={0.085} position={[-0.42, 0.86, 0.22]} color={SKIN} />
       {/* right arm holding coffee */}
       <group ref={arm} position={[0.38, 1.36, 0]}>
-        <Capsule r={0.1} len={0.4} position={[0, -0.25, 0]} color={NAVY} />
+        <Capsule r={0.1} len={0.4} position={[0, -0.25, 0]} color={shirt} />
         <group position={[0, -0.5, 0]}>
           <Ball r={0.085} color={SKIN} />
-          <Cyl top={0.07} bottom={0.055} h={0.17} position={[0, 0.02, 0.1]} rotation={[0.9, 0, 0]} color="#f8fafc" />
-          <Cyl top={0.072} bottom={0.072} h={0.03} position={[0, 0.07, 0.17]} rotation={[0.9, 0, 0]} color="#7c2d12" />
+          {zhou ? (
+            <>
+              <Cyl top={0.07} bottom={0.055} h={0.17} position={[0, 0.02, 0.1]} rotation={[0.9, 0, 0]} color="#f8fafc" />
+              <Cyl top={0.072} bottom={0.072} h={0.03} position={[0, 0.07, 0.17]} rotation={[0.9, 0, 0]} color="#7c2d12" />
+            </>
+          ) : (
+            <>
+              {/* clipboard with the case notes */}
+              <Box size={[0.26, 0.34, 0.02]} position={[0, 0.05, 0.1]} rotation={[0.9, 0, 0]} color="#a16207" />
+              <Box size={[0.22, 0.28, 0.01]} position={[0, 0.06, 0.115]} rotation={[0.9, 0, 0]} color="#f8fafc" />
+            </>
+          )}
         </group>
       </group>
       {/* head */}
@@ -58,14 +81,20 @@ export function Cop({ talking = false, ...group }: ThreeElements["group"] & { ta
             <Box size={[0.1, 0.025, 0.02]} position={[x, 0.11, 0.23]} rotation={[0, 0, x > 0 ? 0.25 : -0.25]} color={HAIR} />
           </group>
         ))}
-        <Ball r={0.05} position={[0, -0.03, 0.27]} color="#d4946a" />
-        {/* mustache */}
-        <Capsule r={0.035} len={0.16} position={[0, -0.1, 0.24]} rotation={[0, 0, Math.PI / 2]} color={HAIR} />
+        <Ball r={0.05} position={[0, -0.03, 0.27]} color={nose} />
         <Box size={[0.1, 0.02, 0.02]} position={[0, -0.17, 0.235]} color="#9f1239" />
-        {/* police cap */}
-        <Cyl top={0.3} bottom={0.25} h={0.13} position={[0, 0.25, 0]} color={NAVY_DARK} />
-        <Box size={[0.36, 0.025, 0.18]} position={[0, 0.19, 0.2]} rotation={[0.2, 0, 0]} color="#0a0a0a" />
-        <Cyl top={0.05} bottom={0.05} h={0.02} segments={6} position={[0, 0.27, 0.27]} rotation={[Math.PI / 2 - 0.2, 0, 0]} color={GOLD} />
+        {zhou ? (
+          <>
+            {/* mustache + police cap */}
+            <Capsule r={0.035} len={0.16} position={[0, -0.1, 0.24]} rotation={[0, 0, Math.PI / 2]} color={HAIR} />
+            <Cyl top={0.3} bottom={0.25} h={0.13} position={[0, 0.25, 0]} color={NAVY_DARK} />
+            <Box size={[0.36, 0.025, 0.18]} position={[0, 0.19, 0.2]} rotation={[0.2, 0, 0]} color="#0a0a0a" />
+            <Cyl top={0.05} bottom={0.05} h={0.02} segments={6} position={[0, 0.27, 0.27]} rotation={[Math.PI / 2 - 0.2, 0, 0]} color={GOLD} />
+          </>
+        ) : (
+          /* short cropped hair, no cap */
+          <Ball r={0.27} position={[0, 0.1, -0.08]} scale={[1, 0.8, 0.9]} color={HAIR} />
+        )}
       </group>
     </group>
   );
