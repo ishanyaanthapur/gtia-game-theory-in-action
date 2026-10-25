@@ -100,7 +100,7 @@ def test_after_check_shows_matrix_but_before_check_does_not(client):
 def test_rows_are_tagged_with_check_version(client):
     qid = pre_question(client)
     client.post("/api/quiz", json={"participant_id": PID, "phase": "pre", "answers": {qid: None}})
-    assert rows(client)[0]["check_version"] == 4
+    assert rows(client)[0]["check_version"] == 5
 
 
 def test_answer_options_never_give_away_the_payoffs(client):

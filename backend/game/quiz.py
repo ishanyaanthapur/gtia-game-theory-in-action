@@ -16,7 +16,8 @@ from backend.game.payoffs import PAYOFFS, Move
 #     matrix is sticky and its scenario text drops the numbers, so players must read payoffs off the matrix.
 # v4: the game adds an in-game 'name your dominant strategy' challenge + matrix highlight before the
 #     after-check (so v4 testers have had extra practice on that concept).
-CHECK_VERSION = 4
+# v5: gamified rounds (prediction bets, points/streaks/badges, round twists).
+CHECK_VERSION = 5
 
 SCENARIO = (
     "You and a partner are arrested and questioned in separate rooms. Each of you can STAY SILENT or "

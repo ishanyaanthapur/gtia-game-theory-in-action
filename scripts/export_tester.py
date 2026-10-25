@@ -70,7 +70,9 @@ def export(pid: str, study: list[dict], audit: list[dict], tokens: list[dict]) -
         elif ev == "round_resolved":
             md.append(f"\n### Round {e['round']}: player **{e['player_move']}**, Tung Tung Tung Sahur **{e['partner_move']}** "
                       f"→ ({e['player_years']}, {e['partner_years']}) years"
-                      + (" · partner forced" if e.get("partner_forced") else "") + "\n")
+                      + (" · partner forced" if e.get("partner_forced") else "")
+                      + (f" · 🔮 bet he'd {e['predicted_partner']}: {'✓' if e.get('prediction_correct') else '✗'}"
+                         if e.get("predicted_partner") else "") + "\n")
         elif ev == "cell_answer":
             md.append(f"- 🧮 Matrix answer round {e['round']}, attempt {e['attempt']}: {e['answer']} → "
                       f"{'✓ correct' if e['correct'] else '✗ wrong'}")
@@ -79,6 +81,8 @@ def export(pid: str, study: list[dict], audit: list[dict], tokens: list[dict]) -
         elif ev == "dominant_answer":
             md.append(f"- 🎯 Dominant strategy pick, attempt {e['attempt']}: **{e['move']}** → "
                       + ("✓ correct" if e["correct"] else "✗ wrong" + (" (answer revealed)" if e.get("revealed") else "")))
+        elif ev == "game_complete":
+            md.append(f"- 🏆 **Final score {e['score']}**, best streak {e['best_streak']}, badges: {', '.join(e.get('badges', [])) or 'none'}")
         elif ev in ("injection_attempt", "provider_content_filter", "partner_override", "agent_fallback"):
             md.append(f"- ⚠️ **{ev}**: {json.dumps({k: v for k, v in e.items() if k not in ('ts', 'session_id', 'event')})}")
     if post:

@@ -16,6 +16,12 @@ type Cam = { position: [number, number, number]; target: [number, number, number
 const ROOM_CAM: Cam = { position: [3.0, 2.6, 5.0], target: [-1.3, 1.2, -1], hfov: 76 };
 const CELLS_CAM: Cam = { position: [0, 3.0, 8.8], target: [0, 0.75, 0], hfov: 62 };
 
+const ROUND_TWIST_TITLES: Record<number, string> = {
+  2: "Round 2 · 🧪 The Polygraph",
+  3: "Round 3 · 🍩 Good Cop?",
+  4: "Round 4 · 🚨 Final Showdown",
+};
+
 const isNpc = (m: Message): m is Message & { speaker: Speaker } => m.speaker === "cop" || m.speaker === "partner" || m.speaker === "tutor";
 
 interface Props {
@@ -35,6 +41,10 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
   const [usage, setUsage] = useState<Usage | null>(null);
   const [wrongPulse, setWrongPulse] = useState(0);
   const [banner, setBanner] = useState<string | null>(null);
+  const [toasts, setToasts] = useState<{ id: number; text: string; points: number }[]>([]);
+  const pendingAwards = useRef<{ text: string; points: number }[]>([]);
+  const knownBadges = useRef<string[]>([]);
+  const lastTwistRound = useRef(1);
   const [highlight, setHighlight] = useState(0); // bumps to (re)play the dominant-strategy highlight on the matrix
   const started = useRef(false);
 
@@ -61,6 +71,11 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
         setMessages((prev) => [...prev, ...fresh.filter((m) => !isNpc(m))]);
         setQueue((q) => [...q, ...fresh.filter(isNpc)]);
         setView(resp.state);
+        pendingAwards.current.push(
+          ...resp.state.last_awards.map((a) => ({ text: a.reason, points: a.points })),
+          ...resp.state.badges.filter((b) => !knownBadges.current.includes(b)).map((b) => ({ text: `🏅 Badge: ${b}`, points: 0 })),
+        );
+        knownBadges.current = resp.state.badges;
         api.usage(resp.state.session_id).then(setUsage).catch(() => {});
         return resp;
       } catch (e) {
@@ -79,6 +94,9 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
     setView(null);
     setUsage(null);
     setHighlight(0);
+    knownBadges.current = [];
+    pendingAwards.current = [];
+    lastTwistRound.current = 1;
     setQueue([]);
     setPiece(0);
     run(() => api.newSession(avatar), "cop");
@@ -98,10 +116,11 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
     (challenge
       ? run(() => api.tutor(sid, text), "tutor", { speaker: "player", text })
       : run(() => api.chat(sid, text), "cop", { speaker: "player", text }));
-  const onMove = async (m: Move) => {
+  const onMove = async (m: Move, prediction: Move | null = null) => {
     if (!sid) return;
     if (!challenge) {
-      run(() => api.move(sid, m), "cop", { speaker: "player", text: `I choose: **${label(m)}**` });
+      const bet = prediction ? ` · 🔮 I bet he ${prediction === "silent" ? "stayed silent" : "confessed"}` : "";
+      run(() => api.move(sid, m, prediction), "cop", { speaker: "player", text: `I choose: **${label(m)}**${bet}` });
       return;
     }
     const resp = await run(() => api.dominant(sid, m), "tutor", {
@@ -122,9 +141,11 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
     if (resp?.correct) flash("✨ Cell unlocked!");
   };
 
-  const flash = (text: string) => {
+  const bannerTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const flash = (text: string, ms = 2200) => {
     setBanner(text);
-    setTimeout(() => setBanner(null), 2200);
+    clearTimeout(bannerTimer.current); // a newer banner gets its full time on screen
+    bannerTimer.current = setTimeout(() => setBanner(null), ms);
   };
 
   // Which room we're in follows whoever is talking; otherwise the game phase.
@@ -134,6 +155,23 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
   const dialoguePending = queue.length > 0;
   const locked = busy || dialoguePending;
 
+  // Show earned points/badges only once every speech bubble has been read.
+  useEffect(() => {
+    if (busy || dialoguePending || !pendingAwards.current.length) return;
+    const batch = pendingAwards.current.splice(0).map((a, i) => ({ ...a, id: Date.now() + i }));
+    setToasts((t) => [...t, ...batch]);
+    const ids = batch.map((b) => b.id);
+    // not cleared on re-render on purpose: each batch always removes itself after its fade-out
+    setTimeout(() => setToasts((t) => t.filter((x) => !ids.includes(x.id))), 3700);
+  }, [busy, dialoguePending, view]);
+
+  // Announce each repeat round's twist when we arrive back in the interrogation room.
+  useEffect(() => {
+    if (!view || !inRoom || view.phase !== "interrogation" || view.round <= lastTwistRound.current) return;
+    lastTwistRound.current = view.round;
+    flash(ROUND_TWIST_TITLES[view.round] ?? `Round ${view.round}`, 3200);
+  }, [inRoom, view]);
+
   return (
     <div className="game">
       <div className="stage">
@@ -141,7 +179,7 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
           <Canvas shadows camera={{ position: ROOM_CAM.position, fov: 52 }}>
             <color attach="background" args={["#05030a"]} />
             <CameraRig {...(inRoom ? ROOM_CAM : CELLS_CAM)} />
-            {inRoom ? <Interrogation avatar={avatar} copTalking={talker === "cop"} /> : <Cells avatar={avatar} result={last} />}
+            {inRoom ? <Interrogation avatar={avatar} copTalking={talker === "cop"} round={view?.round ?? 1} /> : <Cells avatar={avatar} result={last} />}
           </Canvas>
         </div>
 
@@ -151,6 +189,19 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
             {inRoom ? "Interrogation room" : view?.phase === "complete" ? "Debrief with Nash-sensei" : "Holding cells"} · Round{" "}
             <b>{view ? Math.min(view.round, view.max_rounds) : 1}</b>/4
           </span>
+          {view && (
+            <span className="pill score-pill" title="Points: matrix cells, predictions, dominant strategy">
+              ⭐ <b>{view.score}</b>
+              {view.streak > 1 && <span className="streak"> 🔥×{view.streak}</span>}
+            </span>
+          )}
+        </div>
+        <div className="toasts">
+          {toasts.map((t) => (
+            <div key={t.id} className={`toast ${t.points ? "" : "badge"}`}>
+              {t.points ? <b>+{t.points}</b> : null} {t.text}
+            </div>
+          ))}
         </div>
 
         {banner && <div className="banner">{banner}</div>}
@@ -182,7 +233,18 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
         {view?.phase === "complete" && !locked && (
           <div className="hint" style={{ bottom: "auto", top: 64 }}>
             <div className="done-actions">
-              <span style={{ color: "var(--text)", alignSelf: "center" }}>🏆 Matrix complete!</span>
+              <div className="final-score">
+                <span>🏆 Final score</span>
+                <strong>⭐ {view?.score}</strong>
+                <small>best streak 🔥×{view?.best_streak}</small>
+                <div className="badge-list">
+                  {view?.badges.map((b) => (
+                    <span key={b} className="badge-chip" title={b}>
+                      {b.split(":")[0]}
+                    </span>
+                  ))}
+                </div>
+              </div>
               {onAfterCheck && view ? (
                 <>
                   <button className="primary" onClick={() => onAfterCheck(view.session_id)}>Take the after-check →</button>

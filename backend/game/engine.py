@@ -10,13 +10,28 @@ from dataclasses import dataclass, field
 
 from backend.game.coverage import allowed_partner_moves, locked_player_moves
 from backend.game.payoffs import ALL_CELLS, Cell, Move, sentence
-from backend.models import Avatar, MatrixCell, Message, Phase, RoundResult, SessionView
+from backend.models import Avatar, Award, MatrixCell, Message, Phase, RoundResult, SessionView
 
 MAX_ROUNDS = 4
 MAX_COP_MESSAGES_PER_ROUND = 3
 MAX_TUTOR_QUESTIONS = 3      # questions the player may type to Nash-sensei during the challenge
 MAX_CHALLENGE_ATTEMPTS = 2   # wrong dominant-strategy picks before the tutor reveals it
 DOMINANT = Move.CONFESS      # the dominant strategy in this payoff matrix (for both players)
+
+# ---- scoring (all in code; the AI never decides points) ----
+CELL_POINTS = {1: 100, 2: 50, 3: 25}      # matrix cell right on attempt 1 / 2 / 3
+PREDICTION_POINTS = 50                     # guessed the partner's move
+DOMINANT_POINTS = {1: 200, 2: 100}         # named the dominant strategy on attempt 1 / 2
+STREAK_BONUS = 10                          # +10 per answer already in the current streak
+
+BADGES = {
+    "matrix_master": "🧮 Matrix Master: all 4 cells right on the first try",
+    "mind_reader": "🔮 Mind Reader: 3+ correct predictions",
+    "game_theorist": "🎯 Game Theorist: found the dominant strategy first try",
+    "on_fire": "🔥 On Fire: 5 right answers in a row",
+    "trusting_start": "🤝 Trusting Start: stayed silent in round 1",
+    "bold_opener": "😈 Bold Opener: confessed in round 1",
+}
 MAX_CELL_ATTEMPTS = 3  # after this many wrong answers the tutor reveals the cell
 MAX_LLM_CALLS_PER_SESSION = 50
 
@@ -42,6 +57,10 @@ class GameSession:
     tutor_questions: int = 0
     challenge_attempts: int = 0
     dominant_found: bool | None = None
+    score: int = 0
+    streak: int = 0
+    best_streak: int = 0
+    last_awards: list[Award] = field(default_factory=list)
     llm_calls_used: int = 0
 
     # ----- derived state -----
@@ -74,6 +93,34 @@ class GameSession:
             raise GameError("This session has used its AI budget. Start a new game to keep playing.", status=429)
         self.llm_calls_used += 1
 
+    # ----- scoring -----
+
+    def _award(self, reason: str, points: int) -> None:
+        """A right answer: extend the streak and add points (+ streak bonus)."""
+        self.streak += 1
+        self.best_streak = max(self.best_streak, self.streak)
+        bonus = STREAK_BONUS * (self.streak - 1)
+        self.score += points + bonus
+        self.last_awards.append(Award(reason=reason + (f" (🔥 streak x{self.streak})" if bonus else ""), points=points + bonus))
+
+    def _miss(self) -> None:
+        self.streak = 0
+
+    def badges(self) -> list[str]:
+        earned = []
+        answered = [r for r in self.history if r.cell_answered]
+        if len(answered) == 4 and all(r.cell_attempts == 1 for r in answered):
+            earned.append("matrix_master")
+        if sum(bool(r.prediction_correct) for r in self.history) >= 3:
+            earned.append("mind_reader")
+        if self.dominant_found and self.challenge_attempts == 1:
+            earned.append("game_theorist")
+        if self.best_streak >= 5:
+            earned.append("on_fire")
+        if self.history:
+            earned.append("trusting_start" if self.history[0].player_move == Move.SILENT else "bold_opener")
+        return [BADGES[b] for b in earned]
+
     # ----- actions -----
 
     def register_cop_message(self) -> None:
@@ -92,10 +139,17 @@ class GameSession:
             )
 
     def resolve_round(
-        self, player_move: Move, partner_move: Move, *, partner_line: str = "", overridden: bool = False
+        self,
+        player_move: Move,
+        partner_move: Move,
+        *,
+        partner_line: str = "",
+        overridden: bool = False,
+        prediction: Move | None = None,
     ) -> RoundResult:
         """Lock in both moves and compute the sentence. The partner move must be allowed."""
         self.validate_player_move(player_move)
+        self.last_awards = []
         allowed = self.allowed_partner_moves(player_move)
         if partner_move not in allowed:
             raise GameError(f"Partner move '{partner_move}' isn't allowed here (allowed: {allowed}).", status=500)
@@ -109,7 +163,14 @@ class GameSession:
             partner_forced=len(allowed) == 1,
             partner_overridden=overridden,
             partner_line=partner_line,
+            predicted_partner=prediction,
+            prediction_correct=None if prediction is None else prediction == partner_move,
         )
+        if prediction is not None:
+            if result.prediction_correct:
+                self._award("🔮 Predicted Tung Tung Tung Sahur's move", PREDICTION_POINTS)
+            else:
+                self._miss()
         self.history.append(result)
         self.phase = Phase.MATRIX
         return result
@@ -120,10 +181,15 @@ class GameSession:
         Returns (correct, revealed). `revealed` is True when attempts ran out and we show the answer.
         """
         self._require_phase(Phase.MATRIX)
+        self.last_awards = []
         r = self.current
         r.cell_attempts += 1
         correct = (player_years, partner_years) == (r.player_years, r.partner_years)
         revealed = not correct and r.cell_attempts >= MAX_CELL_ATTEMPTS
+        if correct:
+            self._award("🧮 Matrix cell" + (" first try!" if r.cell_attempts == 1 else ""), CELL_POINTS[r.cell_attempts])
+        else:
+            self._miss()
         if correct or revealed:
             r.cell_answered = True
             self._advance()
@@ -146,8 +212,13 @@ class GameSession:
     def answer_dominant(self, move: Move) -> tuple[bool, bool]:
         """The player names their dominant strategy. Returns (correct, revealed); either ends the challenge."""
         self._require_phase(Phase.CHALLENGE)
+        self.last_awards = []
         self.challenge_attempts += 1
         correct = move == DOMINANT
+        if correct:
+            self._award("🎯 Found the dominant strategy", DOMINANT_POINTS[self.challenge_attempts])
+        else:
+            self._miss()
         revealed = not correct and self.challenge_attempts >= MAX_CHALLENGE_ATTEMPTS
         if correct or revealed:
             self.dominant_found = correct
@@ -181,6 +252,11 @@ class GameSession:
             tutor_questions_left=MAX_TUTOR_QUESTIONS - self.tutor_questions,
             challenge_attempts=self.challenge_attempts,
             dominant_found=self.dominant_found,
+            score=self.score,
+            streak=self.streak,
+            best_streak=self.best_streak,
+            badges=self.badges(),
+            last_awards=self.last_awards,
             llm_calls_used=self.llm_calls_used,
             llm_calls_limit=MAX_LLM_CALLS_PER_SESSION,
             matrix=matrix,

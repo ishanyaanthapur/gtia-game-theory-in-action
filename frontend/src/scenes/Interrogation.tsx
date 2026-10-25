@@ -3,17 +3,17 @@ import { Label3D } from "./Label3D";
 import { AnimalSamurai } from "../characters/AnimalSamurai";
 import { Cop } from "../characters/Cop";
 import { TungTung } from "../characters/TungTung";
-import { Box, Cone, Cyl } from "../characters/parts";
+import { Box, Cone, Cyl, Ring } from "../characters/parts";
 import type { AvatarId } from "../types";
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import type { Group } from "three";
+import type { Group, Mesh, MeshToonMaterial, PointLight } from "three";
 import { SpeechAnchor } from "./SpeechAnchor";
 
 const WALL = "#3b4252";
 const WALL_DARK = "#2e3440";
 
-export function Interrogation({ avatar, copTalking }: { avatar: AvatarId; copTalking: boolean }) {
+export function Interrogation({ avatar, copTalking, round = 1 }: { avatar: AvatarId; copTalking: boolean; round?: number }) {
   // copTalking: the cop stops pacing and faces you while a bubble (or the ••• indicator) is up.
   return (
     <group>
@@ -77,6 +77,11 @@ export function Interrogation({ avatar, copTalking }: { avatar: AvatarId; copTal
         {[-0.28, 0.28].flatMap((x) => [-0.25, 0.25].map((z) => <Box key={`${x}${z}`} size={[0.05, 0.4, 0.05]} position={[x, 0.2, z]} color="#111827" />))}
       </group>
 
+      {/* this round's twist prop: polygraph / donuts / alarm */}
+      {round === 2 && <Polygraph />}
+      {round === 3 && <DonutBox />}
+      {round === 4 && <AlarmLight />}
+
       {/* Detective Zhou stands and paces behind the table */}
       <PacingCop talking={copTalking} />
 
@@ -104,6 +109,65 @@ function PacingCop({ talking }: { talking: boolean }) {
     <group ref={ref} position={[0, 0, -1.55]}>
       <Cop talking={talking} />
       <SpeechAnchor id="cop" offset={[0, 2.25, 0]} />
+    </group>
+  );
+}
+
+function Polygraph() {
+  const needle = useRef<Group>(null);
+  const lamp = useRef<Mesh>(null);
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime();
+    if (needle.current) needle.current.rotation.z = Math.sin(t * 9) * 0.35 + Math.sin(t * 23) * 0.15;
+    if (lamp.current) (lamp.current.material as MeshToonMaterial).emissiveIntensity = Math.sin(t * 6) > 0 ? 1.5 : 0.1;
+  });
+  return (
+    <group position={[0.8, 0.82, -0.25]} rotation={[0, -0.35, 0]} scale={1.5}>
+      <Box size={[0.5, 0.18, 0.34]} position={[0, 0.09, 0]} color="#334155" />
+      <Box size={[0.42, 0.01, 0.2]} position={[0, 0.185, 0.02]} color="#f8fafc" />
+      <group ref={needle} position={[0, 0.2, -0.06]}>
+        <Box size={[0.01, 0.01, 0.16]} position={[0, 0, 0.08]} color="#dc2626" />
+      </group>
+      <mesh ref={lamp} position={[0.19, 0.2, -0.13]}>
+        <sphereGeometry args={[0.025, 12, 12]} />
+        <meshToonMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={1} />
+      </mesh>
+    </group>
+  );
+}
+
+function DonutBox() {
+  const donuts: [number, number, string][] = [[-0.1, -0.05, "#f472b6"], [0.08, -0.06, "#a16207"], [-0.02, 0.07, "#fde68a"]];
+  return (
+    <group position={[0.8, 0.82, -0.2]} rotation={[0, -0.3, 0]} scale={1.5}>
+      <Box size={[0.42, 0.04, 0.3]} position={[0, 0.02, 0]} color="#f9a8d4" />
+      <Box size={[0.42, 0.3, 0.02]} position={[0, 0.17, -0.16]} rotation={[-0.35, 0, 0]} color="#f9a8d4" />
+      {donuts.map(([x, z, icing]) => (
+        <group key={x} position={[x, 0.07, z]} rotation={[Math.PI / 2, 0, 0]}>
+          <Ring r={0.055} tube={0.03} color="#d6a35c" />
+          <Ring r={0.055} tube={0.022} position={[0, 0, -0.012]} color={icing} />
+        </group>
+      ))}
+    </group>
+  );
+}
+
+function AlarmLight() {
+  const glow = useRef<PointLight>(null);
+  const dome = useRef<Mesh>(null);
+  useFrame(({ clock }) => {
+    const on = Math.sin(clock.getElapsedTime() * 7) > 0; // whoop-whoop flashing
+    if (glow.current) glow.current.intensity = on ? 22 : 2;
+    if (dome.current) (dome.current.material as MeshToonMaterial).emissiveIntensity = on ? 1.6 : 0.2;
+  });
+  return (
+    <group position={[2.2, 3.05, -3.7]}>
+      <Cyl top={0.12} bottom={0.16} h={0.14} color="#7f1d1d" />
+      <mesh ref={dome} position={[0, 0.07, 0]}>
+        <sphereGeometry args={[0.14, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <meshToonMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={1} />
+      </mesh>
+      <pointLight ref={glow} position={[0, -0.3, 0.6]} color="#ff2a2a" intensity={10} distance={9} />
     </group>
   );
 }

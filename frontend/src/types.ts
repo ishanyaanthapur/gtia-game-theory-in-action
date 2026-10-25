@@ -21,6 +21,13 @@ export interface RoundResult {
   partner_line: string;
   cell_answered: boolean;
   cell_attempts: number;
+  predicted_partner: Move | null;
+  prediction_correct: boolean | null;
+}
+
+export interface Award {
+  reason: string;
+  points: number;
 }
 
 export interface MatrixCell {
@@ -42,6 +49,11 @@ export interface SessionView {
   tutor_questions_left: number;
   challenge_attempts: number;
   dominant_found: boolean | null;
+  score: number;
+  streak: number;
+  best_streak: number;
+  badges: string[];
+  last_awards: Award[];
   llm_calls_used: number;
   llm_calls_limit: number;
   matrix: MatrixCell[];

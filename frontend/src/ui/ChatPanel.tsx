@@ -19,11 +19,12 @@ interface Props {
   dialoguePending: boolean;
   usage: Usage | null;
   onSend: (text: string) => void;
-  onMove: (m: Move) => void;
+  onMove: (m: Move, prediction?: Move | null) => void;
 }
 
 export function ChatPanel({ avatar, messages, view, busy, dialoguePending, usage, onSend, onMove }: Props) {
   const [draft, setDraft] = useState("");
+  const [pending, setPending] = useState<Move | null>(null); // chosen move, waiting for the bonus prediction
   const logRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -35,6 +36,13 @@ export function ChatPanel({ avatar, messages, view, busy, dialoguePending, usage
   const choosing = interrogating || challenge;
   const chatLeft = (challenge ? view?.tutor_questions_left : view?.cop_messages_left) ?? 0;
   const canChat = choosing && !busy && chatLeft > 0;
+
+  useEffect(() => setPending(null), [view?.round, view?.phase]);
+  const commit = (prediction: Move | null) => {
+    if (!pending) return;
+    onMove(pending, prediction);
+    setPending(null);
+  };
 
   const send = () => {
     const text = draft.trim();
@@ -71,14 +79,30 @@ export function ChatPanel({ avatar, messages, view, busy, dialoguePending, usage
       </div>
 
       <div className="composer">
-        {choosing && !busy && (
+        {interrogating && pending && !busy && (
+          <div className="bet" role="dialog" aria-label="Bonus prediction">
+            <div className="bet-title">
+              🔮 Bonus bet <b>+50</b>: what did Tung Tung Tung Sahur do?
+            </div>
+            <div className="bet-row">
+              <button className="bet-btn" onClick={() => commit("silent")}>🤐 He stayed silent</button>
+              <button className="bet-btn" onClick={() => commit("confess")}>🗣️ He confessed</button>
+            </div>
+            <div className="bet-foot">
+              You chose <b>{pending === "silent" ? "Stay Silent" : "Confess"}</b>.{" "}
+              <button className="linkish" onClick={() => setPending(null)}>change</button> ·{" "}
+              <button className="linkish" onClick={() => commit(null)}>skip the bet</button>
+            </div>
+          </div>
+        )}
+        {choosing && !busy && !pending && (
           <div className="your-move" role="status">
             <span className="your-move-arrow" aria-hidden>⬇</span>
             <span>{challenge ? "Which is YOUR dominant strategy?" : "Your move: stay silent or confess?"}</span>
             <span className="your-move-arrow" aria-hidden>⬇</span>
           </div>
         )}
-        {choosing && (
+        {choosing && !pending && (
           <div className={`moves ${!busy ? "ready" : ""}`}>
             {(["silent", "confess"] as Move[]).map((m) => {
               const locked = interrogating && view?.locked_moves.includes(m);
@@ -90,7 +114,7 @@ export function ChatPanel({ avatar, messages, view, busy, dialoguePending, usage
                     ? "Protect Tung Tung Tung Sahur"
                     : "Blame Tung Tung Tung Sahur";
               return (
-                <button key={m} className={`move-btn ${m}`} disabled={busy || locked} onClick={() => onMove(m)}>
+                <button key={m} className={`move-btn ${m}`} disabled={busy || locked} onClick={() => (interrogating ? setPending(m) : onMove(m))}>
                   {m === "silent" ? "🤐 Stay Silent" : "🗣️ Confess"}
                   <small>{sub}</small>
                 </button>

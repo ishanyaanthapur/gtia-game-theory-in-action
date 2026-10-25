@@ -62,7 +62,7 @@ async def chat(session_id: str, body: ChatRequest) -> TurnResponse:
 
 @app.post("/api/session/{session_id}/move", response_model=TurnResponse)
 async def move(session_id: str, body: MoveRequest) -> TurnResponse:
-    return await orchestrator.play_move(session_id, body.move)
+    return await orchestrator.play_move(session_id, body.move, body.prediction)
 
 
 @app.post("/api/session/{session_id}/cell", response_model=TurnResponse)

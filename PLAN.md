@@ -408,3 +408,25 @@ database server, so nothing extra to install and the 10-minute run rule stays ea
   "Dominant strategy (in game)" column (✓ 1st try / ✓ try 2 / ✗ revealed). `CHECK_VERSION = 4`.
 - **Verified** in the browser with real AI: the tutor's answer to "How do I figure out which one is
   dominant?" guided without revealing; a wrong pick got a hint; the right pick played all 5 steps.
+
+## 16. Gamification (Oct 25)
+- **Predict-the-partner bet:** after choosing a move, the player guesses what Tung Tung Tung Sahur
+  did (+50, or skip). The cop teases or praises the bet in the verdict.
+- **Points, scored in code (never by the AI):**
+  - Matrix cell: +100 / +50 / +25 on attempt 1 / 2 / 3.
+  - Dominant strategy: +200 / +100 on attempt 1 / 2.
+  - Streak bonus: +10 per answer already in a streak; wrong answers reset the streak.
+  - Score display (⭐ + 🔥×streak). Points and badge pop-ups wait until the speech bubbles finish,
+    so they never spoil a verdict.
+- **Badges:** 🧮 Matrix Master, 🔮 Mind Reader (3+ bets right), 🎯 Game Theorist, 🔥 On Fire (5 in a
+  row), plus 🤝 Trusting Start or 😈 Bold Opener depending on the round-1 move. A final score card
+  shows them.
+- **Fresher rounds 2–4:** short intros (about 40 words), each with a twist and a matching 3D prop
+  and banner:
+  - 🧪 the polygraph on the table,
+  - 🍩 good cop with a donut box,
+  - 🚨 final showdown with a flashing red alarm.
+- **Logged:** bets in `round_resolved`, plus a `game_complete` event (score, best streak, badges).
+  The tester report has a "Game score" column (points · bets right). `CHECK_VERSION = 5`.
+- **Verified:** a full browser game with the real AI reached 810 points and 4 badges; all round props
+  and banners showed.

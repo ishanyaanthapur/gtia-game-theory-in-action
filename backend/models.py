@@ -57,6 +57,15 @@ class RoundResult(BaseModel):
     partner_line: str = ""
     cell_answered: bool = False
     cell_attempts: int = 0
+    predicted_partner: Move | None = Field(default=None, description="The player's guess of the partner's move (bonus bet).")
+    prediction_correct: bool | None = None
+
+
+class Award(BaseModel):
+    """Points earned by the last action (shown as a pop-up once the dialogue finishes)."""
+
+    reason: str
+    points: int
 
 
 class MatrixCell(BaseModel):
@@ -86,6 +95,11 @@ class SessionView(BaseModel):
     tutor_questions_left: int
     challenge_attempts: int
     dominant_found: bool | None = None  # None until the challenge ends; True if they got it (not revealed)
+    score: int = 0
+    streak: int = 0
+    best_streak: int = 0
+    badges: list[str] = []
+    last_awards: list[Award] = []
     llm_calls_used: int
     llm_calls_limit: int
     matrix: list[MatrixCell]
@@ -105,6 +119,7 @@ class ChatRequest(BaseModel):
 
 class MoveRequest(BaseModel):
     move: Move
+    prediction: Move | None = None  # optional bonus bet: what the player thinks the partner did
 
 
 class CellAnswer(BaseModel):

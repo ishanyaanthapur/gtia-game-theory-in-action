@@ -196,3 +196,11 @@ def test_challenge_question_is_exact_fixed_text(client):
         body = finish_round(client, sid, move)
     tutor_text = [m for m in body["new_messages"] if m["speaker"] == "tutor"][-1]["text"]
     assert tutor_text.endswith(CHALLENGE_QUESTION)
+
+
+def test_move_accepts_optional_prediction(client):
+    sid = new_game(client)
+    state = client.post(f"/api/session/{sid}/move", json={"move": "silent", "prediction": "confess"}).json()["state"]
+    r = state["history"][-1]
+    assert r["predicted_partner"] == "confess" and r["prediction_correct"] == (r["partner_move"] == "confess")
+    assert client.post(f"/api/session/{sid}/move", json={"move": "silent", "prediction": "maybe"}).status_code == 422

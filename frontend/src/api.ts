@@ -28,7 +28,8 @@ async function call<T>(path: string, body?: unknown): Promise<T> {
 export const api = {
   newSession: (avatar: AvatarId) => call<TurnResponse>("/session", { avatar }),
   chat: (id: string, message: string) => call<TurnResponse>(`/session/${id}/chat`, { message }),
-  move: (id: string, move: Move) => call<TurnResponse>(`/session/${id}/move`, { move }),
+  move: (id: string, move: Move, prediction: Move | null = null) =>
+    call<TurnResponse>(`/session/${id}/move`, { move, prediction }),
   cell: (id: string, player_years: number, partner_years: number) =>
     call<TurnResponse>(`/session/${id}/cell`, { player_years, partner_years }),
   tutor: (id: string, message: string) => call<TurnResponse>(`/session/${id}/tutor`, { message }),

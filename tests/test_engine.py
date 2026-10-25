@@ -145,3 +145,45 @@ def test_tutor_questions_are_capped_and_only_during_challenge():
     with pytest.raises(GameError) as err:
         session.register_tutor_question()
     assert err.value.status == 429
+
+
+# ---------- scoring, predictions, badges ----------
+
+def test_first_try_cells_score_100_with_streak_bonus():
+    session = GameSession(avatar=Avatar.YOSHI)
+    play(session, S, S)            # +100, streak 1
+    assert session.score == 100 and session.streak == 1
+    play(session, S, C)            # +100 + 10 streak bonus
+    assert session.score == 210 and session.streak == 2
+
+
+def test_wrong_answer_breaks_streak_and_later_attempts_score_less():
+    session = GameSession(avatar=Avatar.YOSHI)
+    session.resolve_round(S, S)
+    session.answer_cell(9, 9)      # wrong → streak reset, no points
+    assert session.streak == 0 and session.score == 0
+    session.answer_cell(1, 1)      # right on attempt 2 → 50
+    assert session.score == 50
+
+
+def test_correct_prediction_scores_and_wrong_one_breaks_streak():
+    session = GameSession(avatar=Avatar.KIMCHI)
+    r = session.resolve_round(S, S, prediction=S)
+    assert r.prediction_correct is True and session.score == 50
+    session.answer_cell(1, 1)
+    r2 = session.resolve_round(S, C, prediction=S)
+    assert r2.prediction_correct is False and session.streak == 0
+
+
+def test_badges_for_a_perfect_game():
+    session = GameSession(avatar=Avatar.KIMCHI)
+    for move in (S, S, C, C):
+        partner = session.allowed_partner_moves(move)[0]
+        session.resolve_round(move, partner, prediction=partner)
+        r = session.current
+        session.answer_cell(r.player_years, r.partner_years)
+    session.answer_dominant(C)
+    badges = " ".join(session.badges())
+    for name in ("Matrix Master", "Mind Reader", "Game Theorist", "On Fire", "Trusting Start"):
+        assert name in badges
+    assert session.view().last_awards[0].points == 200 + 10 * (session.streak - 1)

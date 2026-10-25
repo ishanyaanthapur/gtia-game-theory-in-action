@@ -42,6 +42,13 @@ CELL_LESSONS: dict[tuple[Move, Move], str] = {
 }
 
 
+# Each repeat round gets its own twist so rounds 2-4 don't feel like reruns (props match in the 3D room).
+ROUND_TWISTS = {
+    2: "THE POLYGRAPH: you've strapped the suspect to a beeping polygraph machine on the table.",
+    3: "GOOD COP: you're suddenly, suspiciously nice and slide a box of donuts across the table.",
+    4: "FINAL SHOWDOWN: the red alarm light is flashing and the Chief is watching. Last round, make it dramatic.",
+}
+
 # The challenge question is fixed text (not AI-generated) so every player sees exactly the same prompt.
 CHALLENGE_QUESTION = (
     "**Which is YOUR dominant strategy, Stay Silent or Confess?** Look at the matrix to see which strategy "
@@ -92,7 +99,8 @@ async def _intro(session: GameSession, new: list[Message]) -> None:
         new,
         await _cop(
             session,
-            f"INTRO. Round {session.round} of 4. Suspect avatar: {session.avatar.value}.{recap}",
+            f"INTRO. Round {session.round} of 4. Suspect avatar: {session.avatar.value}.{recap}"
+            + (f" Twist for this round: {ROUND_TWISTS[session.round]}" if session.round in ROUND_TWISTS else ""),
             purpose=f"intro_r{session.round}",
             fallback="Sit down. You and Tung Tung Tung Sahur robbed Sam Altman's GPU vault. Confess and walk free "
             "if Tung Tung Tung Sahur stays quiet. Both quiet: **1 year** each. Both confess: **2 years** each. Your call.",
@@ -133,7 +141,7 @@ async def chat_with_cop(session_id: str, raw_text: str) -> TurnResponse:
     return TurnResponse(new_messages=new, state=session.view())
 
 
-async def play_move(session_id: str, move: Move) -> TurnResponse:
+async def play_move(session_id: str, move: Move, prediction: Move | None = None) -> TurnResponse:
     session = store.get(session_id)
     session.validate_player_move(move)  # wrong phase / locked row / game over → GameError
     new: list[Message] = []
@@ -158,7 +166,7 @@ async def play_move(session_id: str, move: Move) -> TurnResponse:
         audit(session.session_id, "partner_override", attempted=partner_move.value)
         partner_move, overridden = allowed[0], True
 
-    result = session.resolve_round(move, partner_move, partner_line=partner_line, overridden=overridden)
+    result = session.resolve_round(move, partner_move, partner_line=partner_line, overridden=overridden, prediction=prediction)
     audit(session.session_id, "round_resolved", **result.model_dump(mode="json"))
     _say(session, new, Message(speaker="partner", text=partner_line))
 
@@ -166,6 +174,12 @@ async def play_move(session_id: str, move: Move) -> TurnResponse:
     verdict = (
         f"VERDICT. Round {result.round}. Player chose {move.value}; Tung Tung Tung Sahur chose {partner_move.value}. "
         f"Sentence: player {result.player_years} years, Tung Tung Tung Sahur {result.partner_years} years."
+        + (
+            f" The player bet that Tung Tung Tung Sahur would {prediction.value} and was "
+            f"{'RIGHT' if result.prediction_correct else 'WRONG'}: tease or praise that in one short phrase."
+            if prediction
+            else ""
+        )
     )
     _say(
         session,
@@ -304,4 +318,6 @@ async def answer_dominant(session_id: str, move: Move) -> TurnResponse:
         purpose = "dominant_hint"
         fallback = "Not quite. If he stays silent, is 1 year or 0 years better for you? And if he confesses, 3 or 2?"
     _say(session, new, await _tutor(session, prompt, purpose=purpose, fallback=fallback))
+    if session.phase == Phase.COMPLETE:
+        audit(session.session_id, "game_complete", score=session.score, best_streak=session.best_streak, badges=session.badges())
     return TurnResponse(new_messages=new, correct=correct, state=session.view())
