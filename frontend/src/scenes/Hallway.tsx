@@ -7,6 +7,7 @@ import { AVATARS } from "../characters/avatars";
 import { Box } from "../characters/parts";
 import type { AvatarId } from "../types";
 import { Label3D } from "./Label3D";
+import { MangaPoster } from "./MangaPoster";
 
 interface DoorDef {
   id: number;
@@ -62,7 +63,7 @@ export function Hallway({ avatar, onEnter, onBack }: { avatar: AvatarId; onEnter
           <hemisphereLight args={["#c4b5fd", "#1e1030", 0.6]} />
           <Corridor />
           {DOORS.map((d) => (
-            <Door key={d.id} door={d} highlighted={near?.id === d.id} onClick={() => (target.current = d.stand)} />
+            <Door key={d.id} door={d} avatar={avatar} highlighted={near?.id === d.id} onClick={() => (target.current = d.stand)} />
           ))}
           {DOORS.map((d) => (
             <DoorLabel key={d.id} door={d} />
@@ -134,11 +135,19 @@ function Corridor() {
   );
 }
 
-function Door({ door, highlighted, onClick }: { door: DoorDef; highlighted: boolean; onClick: () => void }) {
+function Door({ door, avatar, highlighted, onClick }: { door: DoorDef; avatar: AvatarId; highlighted: boolean; onClick: () => void }) {
   return (
     <group position={door.pos} rotation={[0, door.facing, 0]} onClick={(e) => (e.stopPropagation(), onClick())}>
       <Box size={[1.5, 2.6, 0.1]} position={[0, 0.05, 0]} color="#2a1745" />
       <Box size={[1.25, 2.35, 0.12]} position={[0, -0.02, 0.02]} color={door.open ? door.color : "#3f3f46"} emissive={highlighted ? door.color : undefined} />
+      {door.id === 1 && (
+        <>
+          {/* WANTED poster taped to the door + the heist manga panel on the wall beside it */}
+          <MangaPoster avatar={avatar} kind="wanted" width={0.9} position={[0, 0.2, 0.09]} />
+          <MangaPoster avatar={avatar} kind="heist" width={1.45} position={[-1.65, 0.3, 0.0]} />
+          <pointLight position={[-0.8, 0.9, 1.2]} color="#f5d0fe" intensity={4} distance={4} />
+        </>
+      )}
       <Box size={[0.1, 0.1, 0.1]} position={[0.45, -0.1, 0.12]} color="#facc15" />
       <Box size={[1.6, 0.06, 0.06]} position={[0, 1.38, 0.08]} color={door.color} emissive={door.color} />
       <pointLight position={[0, 1.4, 0.8]} color={door.color} intensity={highlighted ? 6 : 2.5} distance={4} />
@@ -158,6 +167,7 @@ function DoorLabel({ door }: { door: DoorDef }) {
       accent={door.open ? "#c084fc" : "#a1a1aa"}
       width={2.2}
       dim={!door.open}
+      onTop
     />
   );
 }

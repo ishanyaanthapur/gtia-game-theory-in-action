@@ -56,7 +56,7 @@ const STEPS: Step[] = [
     pareto: "silent,silent",
   },
 ];
-const STEP_MS = 2800;
+const STEP_MS = 4800; // ~4.8 s per step so players can read each comparison
 
 export function PayoffMatrix({ view, busy, wrongPulse, onSubmit, highlight = 0, onReplay }: Props) {
   const current = view.phase === "matrix" ? view.history[view.history.length - 1] : undefined;

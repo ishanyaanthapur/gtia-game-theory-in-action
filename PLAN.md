@@ -430,3 +430,14 @@ database server, so nothing extra to install and the 10-minute run rule stays ea
   The tester report has a "Game score" column (points · bets right). `CHECK_VERSION = 5`.
 - **Verified:** a full browser game with the real AI reached 810 points and 4 badges; all round props
   and banners showed.
+
+## 17. Polish (Oct 25)
+- **Matrix highlight:** steps now last about 4.8 s, up from 2.8 s, so players can read each comparison.
+- **Door labels** draw on top of the walls (no depth test), so "Door 1: …" no longer gets clipped.
+- **Door 1 posters:** manga-style posters drawn in code (`scenes/MangaPoster.tsx`), not AI-generated
+  images. Both use the player's avatar colors and ears:
+  - "THE GREAT GPU HEIST" on the wall: your samurai and Tung Tung Tung Sahur wheeling a cart of
+    "DEFINITELY NOT GPUs" out of the vault, with speed lines, halftone dots, and 「ゴゴゴゴ」「ドン!」.
+  - A "WANTED 指名手配" poster taped to the door.
+
+  `renderPosterPNG(avatar, kind)` exports flat PNGs for the report.

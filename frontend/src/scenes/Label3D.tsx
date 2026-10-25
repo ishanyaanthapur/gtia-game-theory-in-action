@@ -9,9 +9,10 @@ interface Props {
   accent?: string;
   width?: number; // world units
   dim?: boolean;
+  onTop?: boolean; // draw over walls (no depth test) so nearby geometry can't clip the label
 }
 
-export function Label3D({ position, title, subtitle, accent = "#c084fc", width = 1.8, dim = false }: Props) {
+export function Label3D({ position, title, subtitle, accent = "#c084fc", width = 1.8, dim = false, onTop = false }: Props) {
   const { texture, aspect } = useMemo(() => {
     const W = 640;
     const H = subtitle ? 190 : 120;
@@ -45,8 +46,8 @@ export function Label3D({ position, title, subtitle, accent = "#c084fc", width =
   useEffect(() => () => texture.dispose(), [texture]);
 
   return (
-    <sprite position={position} scale={[width, width * aspect, 1]}>
-      <spriteMaterial map={texture} transparent opacity={dim ? 0.65 : 1} depthWrite={false} toneMapped={false} />
+    <sprite position={position} scale={[width, width * aspect, 1]} renderOrder={onTop ? 10 : 0}>
+      <spriteMaterial map={texture} transparent opacity={dim ? 0.65 : 1} depthWrite={false} depthTest={!onTop} toneMapped={false} />
     </sprite>
   );
 }
