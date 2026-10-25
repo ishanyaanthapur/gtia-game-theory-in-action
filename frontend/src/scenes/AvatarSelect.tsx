@@ -53,7 +53,7 @@ export function AvatarSelect({ onPick }: { onPick: (a: AvatarId) => void }) {
       <header className="title-block">
         <p className="eyebrow">GTiA · Game Theory in Action</p>
         <h1>Choose your samurai</h1>
-        <p className="sub">Every door in the hall is a game. Every opponent is an AI. Learn the theory by living it.</p>
+        <p className="sub">Every door in Equilibrium Hall is a game. Every opponent is an AI. Learn the theory by living it.</p>
       </header>
 
       <div className="select-stage" onWheel={onWheel}>
@@ -100,7 +100,7 @@ export function AvatarSelect({ onPick }: { onPick: (a: AvatarId) => void }) {
       </div>
 
       <button className="primary big" onClick={() => onPick(current)}>
-        Enter the hall as {a.name} →
+        Enter Equilibrium Hall as {a.name} →
       </button>
       <p className="fine" style={{ margin: 0 }}>Scroll, use ← → keys, or click a card to switch characters</p>
     </div>

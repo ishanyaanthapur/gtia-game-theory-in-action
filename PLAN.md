@@ -17,7 +17,7 @@
 |---|---|---|
 | 0 | **Pre-check** | 3-question understanding check (about 60 s), logged for Impact. |
 | 1 | **Avatar select** | Pick Jujubee, Yoshi, or Kimchi: three low-poly characters, each with its own color and shape. |
-| 2 | **Hallway** | Arrow keys or WASD to walk, or click a door. Door 1 is open; Doors 2–3 are locked teasers. |
+| 2 | **Equilibrium Hall** | Arrow keys or WASD to walk, or click a door. Door 1 is open; Doors 2–3 are locked teasers. |
 | 3 | **Interrogation room** | The cop (Detective Zhou) explains the case: *"You and Tung Tung Tung Sahur broke into Sam Altman's GPU vault and stole 10,000 H100s."* You can type up to 3 messages to the cop, then choose **Stay Silent** or **Confess (blame Tung Tung)**. |
 | 4 | **Partner moves** | Tung Tung Tung Sahur (the AI partner) picks a move, with one in-character line. |
 | 5 | **Verdict** | The cop announces the sentence. The game engine computes it, not the LLM. |

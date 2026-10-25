@@ -184,7 +184,7 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
         </div>
 
         <div className="hud-top">
-          <button className="ghost pill" onClick={onExit}>← Back to the hall</button>
+          <button className="ghost pill" onClick={onExit}>← Back to Equilibrium Hall</button>
           <span className="pill">
             {inRoom ? "Interrogation room" : view?.phase === "complete" ? "Debrief with Nash-sensei" : "Holding cells"} · Round{" "}
             <b>{view ? Math.min(view.round, view.max_rounds) : 1}</b>/4
@@ -253,7 +253,7 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
               ) : (
                 <>
                   <button className="primary" onClick={start}>Play again</button>
-                  <button className="ghost" onClick={onExit}>Back to the hall</button>
+                  <button className="ghost" onClick={onExit}>Back to Equilibrium Hall</button>
                 </>
               )}
             </div>

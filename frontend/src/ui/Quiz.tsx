@@ -211,7 +211,7 @@ export function QuizResults({ result, onContinue }: { result: QuizResult; onCont
           ))}
         </ul>
         <div className="quiz-actions" style={{ justifyContent: "center" }}>
-          <button className="primary big" onClick={onContinue}>Back to the hall →</button>
+          <button className="primary big" onClick={onContinue}>Back to Equilibrium Hall →</button>
         </div>
       </div>
     </div>

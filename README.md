@@ -79,8 +79,8 @@ React + three.js (`@react-three/fiber`). Every character is built from primitive
 - **Tung Tung Tung Sahur:** the partner.
 - **Nash-sensei:** the tutor, a kitsune sage.
 
-The scenes are in `frontend/src/scenes/`: the avatar select screen, the hallway, the
-interrogation room, and the cells.
+The scenes are in `frontend/src/scenes/`: the avatar select screen, **Equilibrium Hall** (the
+hallway of game doors), the interrogation room, and the cells.
 
 ## API
 

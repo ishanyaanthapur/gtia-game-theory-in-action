@@ -73,6 +73,7 @@ export function Hallway({ avatar, onEnter, onBack }: { avatar: AvatarId; onEnter
 
       <div className="hud-top">
         <button className="ghost pill" onClick={onBack}>← Change avatar</button>
+        <span className="pill hall-title">⚖️ Equilibrium Hall</span>
         <span className="pill">
           Playing as <b>{AVATARS[avatar].name}</b> · {AVATARS[avatar].species}
         </span>
