@@ -8,19 +8,22 @@ import type { AvatarId, QuizResult } from "./types";
 type Screen =
   | { name: "select" }
   | { name: "hallway"; avatar: AvatarId }
-  | { name: "precheck"; avatar: AvatarId }
+  | { name: "precheck"; avatar: AvatarId; preview?: boolean }
   | { name: "dilemma"; avatar: AvatarId }
-  | { name: "postcheck"; avatar: AvatarId; sessionId: string }
+  | { name: "postcheck"; avatar: AvatarId; sessionId: string | null; preview?: boolean }
   | { name: "results"; avatar: AvatarId; result: QuizResult };
 
 // Before/after check status for this page load. A reload = a new tester (handy on a shared laptop).
 type CheckState = { stage: "none" } | { stage: "skipped" } | { stage: "pre_done"; pid: string } | { stage: "post_done" };
 
-// Shortcuts for demos/screenshots: ?play=kimchi jumps into Door 1 (no pre-check), ?play=kimchi&check=1 starts at
+// Shortcuts for demos/screenshots (?preview=pre|post opens a check in no-save preview mode): ?play=kimchi jumps into Door 1 (no pre-check), ?play=kimchi&check=1 starts at
 // the pre-check (for user tests), ?hall=yoshi opens the hallway.
 function initialScreen(): Screen {
   const q = new URLSearchParams(window.location.search);
   const valid = (v: string | null): v is AvatarId => v === "yoshi" || v === "jujubee" || v === "kimchi";
+  const preview = q.get("preview"); // ?preview=pre or ?preview=post: view a check without saving answers
+  if (preview === "pre") return { name: "precheck", avatar: "kimchi", preview: true };
+  if (preview === "post") return { name: "postcheck", avatar: "kimchi", sessionId: null, preview: true };
   const play = q.get("play");
   const hall = q.get("hall");
   if (valid(play)) return { name: q.get("check") === "1" ? "precheck" : "dilemma", avatar: play };
@@ -55,7 +58,9 @@ export default function App() {
         <Quiz
           phase="pre"
           participantId={pendingPid}
+          preview={screen.preview}
           onDone={() => {
+            if (screen.preview) return setScreen({ name: "postcheck", avatar: screen.avatar, sessionId: null, preview: true });
             setCheck({ stage: "pre_done", pid: pendingPid });
             setScreen({ name: "dilemma", avatar: screen.avatar });
           }}
@@ -83,6 +88,7 @@ export default function App() {
           phase="post"
           participantId={check.stage === "pre_done" ? check.pid : pendingPid}
           sessionId={screen.sessionId}
+          preview={screen.preview}
           onDone={(result) => {
             setCheck({ stage: "post_done" });
             setScreen({ name: "results", avatar: screen.avatar, result });

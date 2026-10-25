@@ -12,9 +12,10 @@ interface Props {
   sessionId?: string | null;
   onDone: (result: QuizResult) => void;
   onSkip?: () => void;
+  preview?: boolean; // demo/screenshot mode: graded but never saved
 }
 
-export function Quiz({ phase, participantId, sessionId, onDone, onSkip }: Props) {
+export function Quiz({ phase, participantId, sessionId, onDone, onSkip, preview = false }: Props) {
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [scenario, setScenario] = useState("");
   const [matrix, setMatrix] = useState<PayoffTable | null>(null);
@@ -45,6 +46,7 @@ export function Quiz({ phase, participantId, sessionId, onDone, onSkip }: Props)
         feedback: phase === "post" && feedback.trim() ? feedback.trim() : null,
         consent_quote: phase === "post" && consent,
         session_id: sessionId ?? null,
+        preview,
       });
       onDone(result);
     } catch (e) {
@@ -56,6 +58,7 @@ export function Quiz({ phase, participantId, sessionId, onDone, onSkip }: Props)
   return (
     <div className="screen quiz-screen">
       <div className="quiz-card">
+        {preview && <p className="preview-banner">👀 Preview mode: answers here are graded but NOT saved to the study data.</p>}
         <p className="eyebrow">{phase === "pre" ? "Before you play" : "After the game"}</p>
         <h1>{phase === "pre" ? "One quick question before you play" : "Now, what did you learn?"}</h1>
         <p className="sub">

@@ -94,6 +94,7 @@ export interface QuizSubmission {
   feedback?: string | null;
   consent_quote?: boolean;
   session_id?: string | null;
+  preview?: boolean;
 }
 
 export interface PayoffTable {

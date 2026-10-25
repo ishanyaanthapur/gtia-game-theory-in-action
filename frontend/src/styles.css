@@ -294,3 +294,8 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 .quiz-matrix > small { display: block; color: var(--muted); margin: 2px 0 10px; }
 .quiz-matrix .cell { min-height: 40px; }
 .quiz-matrix .matrix { gap: 5px; }
+
+.preview-banner {
+  margin: 0 0 12px; padding: 8px 12px; border-radius: 10px; font-size: 0.85rem; font-weight: 600;
+  background: rgba(250, 204, 21, 0.12); border: 1px solid rgba(250, 204, 21, 0.5); color: #fde68a;
+}

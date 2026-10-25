@@ -112,3 +112,9 @@ def test_answer_options_never_give_away_the_payoffs(client):
 def test_after_check_scenario_has_no_numbers(client):
     scenario = client.get("/api/quiz", params={"phase": "post"}).json()["scenario"]
     assert not any(ch.isdigit() for ch in scenario)
+
+
+def test_preview_submissions_are_graded_but_not_saved(client):
+    r = client.post("/api/quiz", json={"participant_id": PID, "phase": "post", "answers": RIGHT, "preview": True})
+    assert r.status_code == 200 and r.json()["score"] == 5
+    assert not (client.tmp_path / "study.jsonl").exists()

@@ -119,6 +119,7 @@ class QuizSubmission(BaseModel):
     feedback: str | None = Field(default=None, max_length=500)
     consent_quote: bool = False
     session_id: str | None = Field(default=None, max_length=40)
+    preview: bool = Field(default=False, description="Preview mode (?preview=pre|post): grade but don't save")
 
 
 class PreLink(BaseModel):

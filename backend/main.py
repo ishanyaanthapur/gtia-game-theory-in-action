@@ -111,6 +111,8 @@ async def submit_quiz(body: QuizSubmission) -> QuizResult:
             correct_before=pre["correct"][qid],
             correct_after=correct.get(qid, False),
         )
+    if body.preview:  # demo/screenshot mode: grade only, never touch the study data
+        return QuizResult(phase=body.phase, score=score, total=len(results), results=results)
     log_study(
         {
             "participant_id": body.participant_id,

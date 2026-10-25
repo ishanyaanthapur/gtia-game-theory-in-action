@@ -34,6 +34,7 @@ Shortcuts for demos and screenshots:
 - `/?play=kimchi` jumps straight into Door 1.
 - `/?play=kimchi&check=1` starts at the before-check, which is useful for user tests.
 - `/?hall=yoshi` opens the hallway.
+- `/?preview=pre` and `/?preview=post` open the before- and after-checks in **preview mode**. Answers are graded but never saved, so use these for screenshots and demos.
 
 ## Before/after understanding check (user study)
 
