@@ -14,7 +14,9 @@ from backend.game.payoffs import PAYOFFS, Move
 # v2: after-check shows the full matrix (tester #2, Oct 25).
 # v3: answer options no longer state the years (tester #2 said that made it too easy); the after-check
 #     matrix is sticky and its scenario text drops the numbers, so players must read payoffs off the matrix.
-CHECK_VERSION = 3
+# v4: the game adds an in-game 'name your dominant strategy' challenge + matrix highlight before the
+#     after-check (so v4 testers have had extra practice on that concept).
+CHECK_VERSION = 4
 
 SCENARIO = (
     "You and a partner are arrested and questioned in separate rooms. Each of you can STAY SILENT or "

@@ -17,7 +17,8 @@ class Avatar(StrEnum):
 class Phase(StrEnum):
     INTERROGATION = "interrogation"  # chat with the cop, then choose a move
     MATRIX = "matrix"                # fill in this round's cell of the payoff matrix
-    COMPLETE = "complete"            # all 4 cells done, debrief shown
+    CHALLENGE = "challenge"          # matrix done: player must name their dominant strategy (can ask the tutor)
+    COMPLETE = "complete"            # dominant strategy found (or revealed), debrief shown
 
 
 # ---------- Agent outputs (pydantic-ai output_type) ----------
@@ -82,6 +83,9 @@ class SessionView(BaseModel):
     max_rounds: int
     locked_moves: list[Move]
     cop_messages_left: int
+    tutor_questions_left: int
+    challenge_attempts: int
+    dominant_found: bool | None = None  # None until the challenge ends; True if they got it (not revealed)
     llm_calls_used: int
     llm_calls_limit: int
     matrix: list[MatrixCell]

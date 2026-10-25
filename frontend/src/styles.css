@@ -299,3 +299,35 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   margin: 0 0 12px; padding: 8px 12px; border-radius: 10px; font-size: 0.85rem; font-weight: 600;
   background: rgba(250, 204, 21, 0.12); border: 1px solid rgba(250, 204, 21, 0.5); color: #fde68a;
 }
+
+/* ---------- dominant-strategy highlight animation ---------- */
+.matrix-panel.highlighting { border-color: #fbbf24; box-shadow: 0 0 46px rgba(251, 191, 36, 0.25); }
+.matrix-caption {
+  margin: -2px 0 10px; padding: 8px 12px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; line-height: 1.4;
+  background: rgba(251, 191, 36, 0.12); border: 1px solid rgba(251, 191, 36, 0.45); color: #fde68a;
+  animation: captionIn 0.35s ease-out;
+}
+@keyframes captionIn { from { opacity: 0; transform: translateY(-6px); } }
+.cell { position: relative; transition: box-shadow 0.3s, border-color 0.3s, background 0.3s; }
+.cell span { display: inline-block; transition: transform 0.3s, opacity 0.3s, color 0.3s; }
+.cell .hl-win {
+  color: var(--good) !important; transform: scale(1.45); text-shadow: 0 0 14px rgba(52, 211, 153, 0.9);
+  animation: winPulse 0.9s ease-in-out infinite;
+}
+.cell .hl-lose { opacity: 0.35; text-decoration: line-through; }
+@keyframes winPulse { 0%, 100% { transform: scale(1.35); } 50% { transform: scale(1.6); } }
+.cell.row-glow { border-color: var(--purple-bright); box-shadow: inset 0 0 18px rgba(192, 132, 252, 0.45); }
+.cell.col-glow { border-color: var(--partner); box-shadow: inset 0 0 18px rgba(227, 168, 107, 0.45); }
+.cell.row-glow.col-glow { box-shadow: inset 0 0 14px rgba(192, 132, 252, 0.45), 0 0 0 2px rgba(227, 168, 107, 0.6); }
+.cell.ne {
+  border-color: #fbbf24; background: rgba(251, 191, 36, 0.16);
+  animation: nePulse 1.2s ease-in-out infinite;
+}
+@keyframes nePulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.0); } 50% { box-shadow: 0 0 26px 4px rgba(251, 191, 36, 0.55); } }
+.cell.pareto { border: 2px dashed var(--good); }
+.cell-badge {
+  position: absolute; bottom: -9px; left: 50%; transform: translateX(-50%); font-size: 0.62rem; font-style: normal;
+  font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; padding: 1px 7px; border-radius: 999px;
+  background: var(--good); color: #052e1c; white-space: nowrap;
+}
+.cell-badge.gold { background: #fbbf24; color: #2a1a00; }

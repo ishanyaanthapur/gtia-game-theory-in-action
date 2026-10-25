@@ -70,6 +70,18 @@ async def cell(session_id: str, body: CellAnswer) -> TurnResponse:
     return await orchestrator.answer_cell(session_id, body.player_years, body.partner_years)
 
 
+@app.post("/api/session/{session_id}/tutor", response_model=TurnResponse)
+async def tutor_question(session_id: str, body: ChatRequest) -> TurnResponse:
+    """Challenge phase: ask Nash-sensei a question before naming the dominant strategy."""
+    return await orchestrator.ask_tutor(session_id, body.message)
+
+
+@app.post("/api/session/{session_id}/dominant", response_model=TurnResponse)
+async def dominant(session_id: str, body: MoveRequest) -> TurnResponse:
+    """Challenge phase: the player names their dominant strategy (graded in code)."""
+    return await orchestrator.answer_dominant(session_id, body.move)
+
+
 @app.get("/api/session/{session_id}/usage")
 async def usage(session_id: str) -> dict:
     orchestrator.store.get(session_id)  # 404 if unknown

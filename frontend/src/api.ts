@@ -31,6 +31,8 @@ export const api = {
   move: (id: string, move: Move) => call<TurnResponse>(`/session/${id}/move`, { move }),
   cell: (id: string, player_years: number, partner_years: number) =>
     call<TurnResponse>(`/session/${id}/cell`, { player_years, partner_years }),
+  tutor: (id: string, message: string) => call<TurnResponse>(`/session/${id}/tutor`, { message }),
+  dominant: (id: string, move: Move) => call<TurnResponse>(`/session/${id}/dominant`, { move }),
   usage: (id: string) => call<Usage>(`/session/${id}/usage`),
   quiz: (phase: "pre" | "post") =>
     call<{ scenario: string; questions: QuizQuestion[]; matrix: PayoffTable | null }>(`/quiz?phase=${phase}`),

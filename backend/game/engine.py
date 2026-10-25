@@ -14,6 +14,9 @@ from backend.models import Avatar, MatrixCell, Message, Phase, RoundResult, Sess
 
 MAX_ROUNDS = 4
 MAX_COP_MESSAGES_PER_ROUND = 3
+MAX_TUTOR_QUESTIONS = 3      # questions the player may type to Nash-sensei during the challenge
+MAX_CHALLENGE_ATTEMPTS = 2   # wrong dominant-strategy picks before the tutor reveals it
+DOMINANT = Move.CONFESS      # the dominant strategy in this payoff matrix (for both players)
 MAX_CELL_ATTEMPTS = 3  # after this many wrong answers the tutor reveals the cell
 MAX_LLM_CALLS_PER_SESSION = 50
 
@@ -36,6 +39,9 @@ class GameSession:
     history: list[RoundResult] = field(default_factory=list)
     messages: list[Message] = field(default_factory=list)
     cop_messages_this_round: int = 0
+    tutor_questions: int = 0
+    challenge_attempts: int = 0
+    dominant_found: bool | None = None
     llm_calls_used: int = 0
 
     # ----- derived state -----
@@ -125,11 +131,28 @@ class GameSession:
 
     def _advance(self) -> None:
         if len(self.history) >= MAX_ROUNDS or set(self.visited) == set(ALL_CELLS):
-            self.phase = Phase.COMPLETE
+            self.phase = Phase.CHALLENGE  # before the debrief, the player must name the dominant strategy
         else:
             self.round += 1
             self.cop_messages_this_round = 0
             self.phase = Phase.INTERROGATION
+
+    def register_tutor_question(self) -> None:
+        self._require_phase(Phase.CHALLENGE)
+        if self.tutor_questions >= MAX_TUTOR_QUESTIONS:
+            raise GameError("Nash-sensei has answered enough questions. Time to choose your dominant strategy.", status=429)
+        self.tutor_questions += 1
+
+    def answer_dominant(self, move: Move) -> tuple[bool, bool]:
+        """The player names their dominant strategy. Returns (correct, revealed); either ends the challenge."""
+        self._require_phase(Phase.CHALLENGE)
+        self.challenge_attempts += 1
+        correct = move == DOMINANT
+        revealed = not correct and self.challenge_attempts >= MAX_CHALLENGE_ATTEMPTS
+        if correct or revealed:
+            self.dominant_found = correct
+            self.phase = Phase.COMPLETE
+        return correct, revealed
 
     # ----- view -----
 
@@ -155,6 +178,9 @@ class GameSession:
             max_rounds=MAX_ROUNDS,
             locked_moves=self.locked_moves(),
             cop_messages_left=MAX_COP_MESSAGES_PER_ROUND - self.cop_messages_this_round,
+            tutor_questions_left=MAX_TUTOR_QUESTIONS - self.tutor_questions,
+            challenge_attempts=self.challenge_attempts,
+            dominant_found=self.dominant_found,
             llm_calls_used=self.llm_calls_used,
             llm_calls_limit=MAX_LLM_CALLS_PER_SESSION,
             matrix=matrix,

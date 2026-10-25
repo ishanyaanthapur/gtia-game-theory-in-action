@@ -74,6 +74,11 @@ def export(pid: str, study: list[dict], audit: list[dict], tokens: list[dict]) -
         elif ev == "cell_answer":
             md.append(f"- 🧮 Matrix answer round {e['round']}, attempt {e['attempt']}: {e['answer']} → "
                       f"{'✓ correct' if e['correct'] else '✗ wrong'}")
+        elif ev == "tutor_question":
+            md.append(f"- ❓ **Player asks Nash-sensei**: {e['text']}")
+        elif ev == "dominant_answer":
+            md.append(f"- 🎯 Dominant strategy pick, attempt {e['attempt']}: **{e['move']}** → "
+                      + ("✓ correct" if e["correct"] else "✗ wrong" + (" (answer revealed)" if e.get("revealed") else "")))
         elif ev in ("injection_attempt", "provider_content_filter", "partner_override", "agent_fallback"):
             md.append(f"- ⚠️ **{ev}**: {json.dumps({k: v for k, v in e.items() if k not in ('ts', 'session_id', 'event')})}")
     if post:

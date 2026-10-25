@@ -35,6 +35,7 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
   const [usage, setUsage] = useState<Usage | null>(null);
   const [wrongPulse, setWrongPulse] = useState(0);
   const [banner, setBanner] = useState<string | null>(null);
+  const [highlight, setHighlight] = useState(0); // bumps to (re)play the dominant-strategy highlight on the matrix
   const started = useRef(false);
 
   const current = queue[0];
@@ -77,6 +78,7 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
     setMessages([]);
     setView(null);
     setUsage(null);
+    setHighlight(0);
     setQueue([]);
     setPiece(0);
     run(() => api.newSession(avatar), "cop");
@@ -89,9 +91,30 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
   }, [start]);
 
   const sid = view?.session_id;
-  const onSend = (text: string) => sid && run(() => api.chat(sid, text), "cop", { speaker: "player", text });
-  const onMove = (m: Move) =>
-    sid && run(() => api.move(sid, m), "cop", { speaker: "player", text: `I choose: **${m === "silent" ? "Stay Silent" : "Confess"}**` });
+  const challenge = view?.phase === "challenge";
+  const label = (m: Move) => (m === "silent" ? "Stay Silent" : "Confess");
+  const onSend = (text: string) =>
+    sid &&
+    (challenge
+      ? run(() => api.tutor(sid, text), "tutor", { speaker: "player", text })
+      : run(() => api.chat(sid, text), "cop", { speaker: "player", text }));
+  const onMove = async (m: Move) => {
+    if (!sid) return;
+    if (!challenge) {
+      run(() => api.move(sid, m), "cop", { speaker: "player", text: `I choose: **${label(m)}**` });
+      return;
+    }
+    const resp = await run(() => api.dominant(sid, m), "tutor", {
+      speaker: "player",
+      text: `My dominant strategy is: **${label(m)}**`,
+    });
+    if (resp?.state.phase === "complete") {
+      flash(resp.correct ? "🎯 You found the dominant strategy!" : "💡 The dominant strategy is Confess");
+      setHighlight((n) => n + 1); // play the matrix animation
+    } else if (resp?.correct === false) {
+      setWrongPulse((n) => n + 1);
+    }
+  };
   const onCell = async (you: number, them: number) => {
     if (!sid) return;
     const resp = await run(() => api.cell(sid, you, them), "tutor", { speaker: "player", text: `My years: **${you}**, Tung Tung Tung Sahur's: **${them}**` });
@@ -146,7 +169,16 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
           busy && <SpeechBubble key={`typing-${waitingOn}`} speaker={waitingOn} />
         )}
 
-        {view && !inRoom && <PayoffMatrix view={view} busy={locked} wrongPulse={wrongPulse} onSubmit={onCell} />}
+        {view && !inRoom && (
+          <PayoffMatrix
+            view={view}
+            busy={locked}
+            wrongPulse={wrongPulse}
+            onSubmit={onCell}
+            highlight={highlight}
+            onReplay={() => setHighlight((n) => n + 1)}
+          />
+        )}
         {view?.phase === "complete" && !locked && (
           <div className="hint" style={{ bottom: "auto", top: 64 }}>
             <div className="done-actions">

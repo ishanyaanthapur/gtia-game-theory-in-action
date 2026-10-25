@@ -39,6 +39,20 @@ def matrix_first_try(session_id: str | None) -> tuple[int, int]:
     return sum(first.values()), len(first)
 
 
+def dominant_in_game(session_id: str | None) -> str:
+    """How the player did on the in-game 'name your dominant strategy' challenge (v4+)."""
+    if not session_id or not AUDIT_LOG.exists():
+        return "–"
+    picks = [json.loads(l) for l in AUDIT_LOG.read_text().splitlines()]
+    picks = [e for e in picks if e.get("session_id") == session_id and e.get("event") == "dominant_answer"]
+    if not picks:
+        return "–"
+    last = picks[-1]
+    if last["correct"]:
+        return "✓ 1st try" if last["attempt"] == 1 else f"✓ try {last['attempt']}"
+    return "✗ revealed"
+
+
 def mark(ok: bool | None) -> str:
     return "–" if ok is None else ("✓" if ok else "✗")
 
@@ -81,8 +95,8 @@ def main() -> None:
     # ---- one row per tester: progress from before -> game -> after ----
     if pre or post:
         head = "| Tester | Check v | Before question | Right first time? | Same question after | " + " | ".join(q.concept for q in QUESTIONS)
-        lines += ["", "## Per tester", "", head + " | After score | Matrix cells right on 1st try | Confidence | Useful | Min |",
-                  "|" + "---|" * (11 + len(QUESTIONS) - 1)]
+        lines += ["", "## Per tester", "", head + " | Matrix cells right on 1st try | Dominant strategy (in game) | After score | Confidence | Useful | Min |",
+                  "|" + "---|" * (12 + len(QUESTIONS) - 1)]
         for pid in dict.fromkeys([*pre, *post]):
             a, z = pre.get(pid), post.get(pid)
             qid = a["asked"][0] if a else None
@@ -90,8 +104,8 @@ def main() -> None:
             per_q = " | ".join(mark(z["correct"].get(q.id)) if z else "–" for q in QUESTIONS)
             lines.append(
                 f"| {pid[:8]} | v{(a or z).get('check_version', 1)} | {BY_ID[qid].concept if qid else '–'} | {mark(a['correct'][qid]) if a else '–'} | "
-                f"{mark(z['correct'].get(qid)) if a and z else '–'} | {per_q} | {z['score'] if z else '–'}/5 | "
-                f"{f'{right}/{tried}' if tried else '–'} | {(z or {}).get('confidence') or '–'} | {(z or {}).get('rating') or '–'} | "
+                f"{mark(z['correct'].get(qid)) if a and z else '–'} | {per_q} | {f'{right}/{tried}' if tried else '–'} | "
+                f"{dominant_in_game((z or {}).get('session_id'))} | {z['score'] if z else '–'}/5 | {(z or {}).get('confidence') or '–'} | {(z or {}).get('rating') or '–'} | "
                 f"{(z or {}).get('minutes_since_pre') or '–'} |"
             )
     quotes = [z["feedback"] for z in post.values() if z.get("feedback") and z.get("consent_quote")]

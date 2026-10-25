@@ -228,22 +228,71 @@ async def answer_cell(session_id: str, player_years: int, partner_years: int) ->
             f"The cop said: player {r.player_years}y, Tung Tung Tung Sahur {r.partner_years}y (do NOT state these numbers)."
         )
         fallback = "Not quite. What did Detective Zhou say each of you got? Your years go first."
-    if session.phase == Phase.COMPLETE:
-        # One combined call: react to the last answer in a sentence, then the full debrief.
+    if session.phase == Phase.CHALLENGE:
+        # Matrix complete: react to the last cell, then ask the player to name their dominant strategy.
         result_word = "correctly" if correct else "after a reveal"
         prompt = (
-            f"DEBRIEF. All 4 cells are now filled (the last one, {cell}, {result_word}; it is "
-            f"{CELL_LESSONS[(r.player_move, r.partner_move)]}). Open with ONE short sentence about that last cell, "
-            "then give the FULL debrief: dominant strategy, Nash equilibrium, the dilemma, one real-world example, "
-            "and end with a reflection question."
+            f"CHALLENGE. All 4 cells are now filled (the last one, {cell}, {result_word}; it is "
+            f"{CELL_LESSONS[(r.player_move, r.partner_move)]})."
         )
         fallback = (
-            "You built the whole matrix! Confessing is a **dominant strategy**, so (Confess, Confess) "
-            "is the **Nash equilibrium**, even though both staying silent is better for both. That's the dilemma."
+            "You built the whole matrix! A **dominant strategy** is best for you no matter what the other player "
+            "does. **Which is YOUR dominant strategy: Stay Silent or Confess?** Type any question to me below first."
         )
-    purpose = "debrief" if session.phase == Phase.COMPLETE else f"feedback_r{r.round}"
+    purpose = "challenge" if session.phase == Phase.CHALLENGE else f"feedback_r{r.round}"
     _say(session, new, await _tutor(session, prompt, purpose=purpose, fallback=fallback))
 
     if session.phase == Phase.INTERROGATION:
         await _intro(session, new)
+    return TurnResponse(new_messages=new, correct=correct, state=session.view())
+
+
+async def ask_tutor(session_id: str, raw_text: str) -> TurnResponse:
+    """During the challenge the player may type questions to Nash-sensei (capped)."""
+    session = store.get(session_id)
+    text = clean_player_text(raw_text)
+    if not text:
+        raise GameError("Type a question first.", status=422)
+    session.register_tutor_question()
+    if looks_like_injection(text):
+        audit(session.session_id, "injection_attempt", text=text)
+    audit(session.session_id, "tutor_question", text=text)
+    new: list[Message] = []
+    _say(session, new, Message(speaker="player", text=text))
+    _say(
+        session,
+        new,
+        await _tutor(
+            session,
+            f"QUESTION. The student asks: {wrap_player_text(text)}",
+            purpose="tutor_question",
+            fallback="Look down each column at **your** years: what do you get if he stays silent, and if he confesses?",
+        ),
+    )
+    return TurnResponse(new_messages=new, state=session.view())
+
+
+async def answer_dominant(session_id: str, move: Move) -> TurnResponse:
+    """The player names their dominant strategy. Graded in code; the tutor hints, or debriefs when it's over."""
+    session = store.get(session_id)
+    correct, revealed = session.answer_dominant(move)
+    audit(
+        session.session_id, "dominant_answer", move=move.value, correct=correct,
+        attempt=session.challenge_attempts, revealed=revealed,
+    )
+    new: list[Message] = []
+    _say(session, new, Message(speaker="player", text=f"My dominant strategy is: **{_label(move)}**"))
+    if correct or revealed:
+        outcome = "They FOUND it (Confess) on their own." if correct else "They did not find it; reveal that it is Confess."
+        prompt, purpose = f"DEBRIEF. {outcome}", "debrief"
+        fallback = (
+            ("Yes! " if correct else "It's **Confess**. ")
+            + "Watch the matrix: confessing gives you fewer years whatever he does (0 < 1, 2 < 3), and the same is "
+            "true for him. So (Confess, Confess) is the **Nash equilibrium**, even though (1, 1) is better for both."
+        )
+    else:
+        prompt = f"DOMINANT_WRONG. Attempt {session.challenge_attempts} of 2. They picked {_label(move)}."
+        purpose = "dominant_hint"
+        fallback = "Not quite. If he stays silent, is 1 year or 0 years better for you? And if he confesses, 3 or 2?"
+    _say(session, new, await _tutor(session, prompt, purpose=purpose, fallback=fallback))
     return TurnResponse(new_messages=new, correct=correct, state=session.view())

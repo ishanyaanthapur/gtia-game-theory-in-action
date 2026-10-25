@@ -31,8 +31,10 @@ export function ChatPanel({ avatar, messages, view, busy, dialoguePending, usage
   }, [messages, busy]);
 
   const interrogating = view?.phase === "interrogation";
-  const chatLeft = view?.cop_messages_left ?? 0;
-  const canChat = interrogating && !busy && chatLeft > 0;
+  const challenge = view?.phase === "challenge"; // name your dominant strategy; questions go to Nash-sensei
+  const choosing = interrogating || challenge;
+  const chatLeft = (challenge ? view?.tutor_questions_left : view?.cop_messages_left) ?? 0;
+  const canChat = choosing && !busy && chatLeft > 0;
 
   const send = () => {
     const text = draft.trim();
@@ -69,21 +71,28 @@ export function ChatPanel({ avatar, messages, view, busy, dialoguePending, usage
       </div>
 
       <div className="composer">
-        {interrogating && !busy && (
+        {choosing && !busy && (
           <div className="your-move" role="status">
             <span className="your-move-arrow" aria-hidden>⬇</span>
-            <span>Your move: stay silent or confess?</span>
+            <span>{challenge ? "Which is YOUR dominant strategy?" : "Your move: stay silent or confess?"}</span>
             <span className="your-move-arrow" aria-hidden>⬇</span>
           </div>
         )}
-        {interrogating && (
+        {choosing && (
           <div className={`moves ${!busy ? "ready" : ""}`}>
             {(["silent", "confess"] as Move[]).map((m) => {
-              const locked = view?.locked_moves.includes(m);
+              const locked = interrogating && view?.locked_moves.includes(m);
+              const sub = challenge
+                ? "is my dominant strategy"
+                : locked
+                  ? "Already explored"
+                  : m === "silent"
+                    ? "Protect Tung Tung Tung Sahur"
+                    : "Blame Tung Tung Tung Sahur";
               return (
                 <button key={m} className={`move-btn ${m}`} disabled={busy || locked} onClick={() => onMove(m)}>
                   {m === "silent" ? "🤐 Stay Silent" : "🗣️ Confess"}
-                  <small>{locked ? "Already explored" : m === "silent" ? "Protect Tung Tung Tung Sahur" : "Blame Tung Tung Tung Sahur"}</small>
+                  <small>{sub}</small>
                 </button>
               );
             })}
@@ -99,6 +108,10 @@ export function ChatPanel({ avatar, messages, view, busy, dialoguePending, usage
               ? "Detective Zhou is getting ready…"
               : dialoguePending
               ? "Click Next on the speech bubble to keep going…"
+              : challenge
+              ? chatLeft > 0
+                ? "Ask Nash-sensei anything before you choose… (Enter to send)"
+                : "Nash-sensei has answered your questions. Make your choice."
               : !interrogating
               ? "Fill in the payoff matrix with Nash-sensei →"
               : chatLeft > 0
@@ -109,7 +122,9 @@ export function ChatPanel({ avatar, messages, view, busy, dialoguePending, usage
           onKeyDown={onKey}
         />
         <div className="composer-row">
-          <span>{interrogating ? `${chatLeft} question${chatLeft === 1 ? "" : "s"} left this round` : ""}</span>
+          <span>
+            {choosing ? `${chatLeft} question${chatLeft === 1 ? "" : "s"} left${challenge ? " for Nash-sensei" : " this round"}` : ""}
+          </span>
           {usage && view && (
             <span className="usage" title="Measured from the backend token log">
               <span>AI calls <b>{view.llm_calls_used}/{view.llm_calls_limit}</b></span>

@@ -1,7 +1,7 @@
 // Mirrors backend/models.py
 export type Move = "silent" | "confess";
 export type AvatarId = "jujubee" | "yoshi" | "kimchi";
-export type Phase = "interrogation" | "matrix" | "complete";
+export type Phase = "interrogation" | "matrix" | "challenge" | "complete";
 export type Speaker = "cop" | "partner" | "tutor" | "player" | "system";
 
 export interface Message {
@@ -39,6 +39,9 @@ export interface SessionView {
   max_rounds: number;
   locked_moves: Move[];
   cop_messages_left: number;
+  tutor_questions_left: number;
+  challenge_attempts: number;
+  dominant_found: boolean | null;
   llm_calls_used: number;
   llm_calls_limit: number;
   matrix: MatrixCell[];

@@ -390,3 +390,21 @@ database server, so nothing extra to install and the 10-minute run rule stays ea
   - The after-check scenario text has no numbers.
   - The payoff matrix is a sticky header (`position: sticky`), pinned while the player scrolls,
     so players must read payoffs off the matrix.
+
+## 15. Reinforcing the learning: dominant-strategy challenge (Oct 25)
+- **New `challenge` phase** after the 4th cell, before the debrief. Nash-sensei asks "Which is YOUR
+  dominant strategy, Stay Silent or Confess?" and invites the player to type questions first.
+- **Questions:** up to 3, answered without giving the answer away.
+- **The pick** is graded in code. A wrong pick gets a hint; after 2 misses the answer is revealed.
+- **Matrix highlight**, 5 steps:
+  1. your 0 < 1,
+  2. your 2 < 3,
+  3. the Confess row glows (your dominant strategy),
+  4. the same comparisons for Tung Tung Tung Sahur, with his Confess column glowing,
+  5. (2, 2) marked **Nash equilibrium** and (1, 1) marked **best for both**.
+
+  A "Replay highlight" button follows. Then the debrief, then the after-check.
+- **Logged:** `tutor_question` and `dominant_answer` events. The per-tester report has a
+  "Dominant strategy (in game)" column (✓ 1st try / ✓ try 2 / ✗ revealed). `CHECK_VERSION = 4`.
+- **Verified** in the browser with real AI: the tutor's answer to "How do I figure out which one is
+  dominant?" guided without revealing; a wrong pick got a hint; the right pick played all 5 steps.
