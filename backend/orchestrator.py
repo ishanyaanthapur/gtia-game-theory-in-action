@@ -42,6 +42,13 @@ CELL_LESSONS: dict[tuple[Move, Move], str] = {
 }
 
 
+# The challenge question is fixed text (not AI-generated) so every player sees exactly the same prompt.
+CHALLENGE_QUESTION = (
+    "**Which is YOUR dominant strategy, Stay Silent or Confess?** Look at the matrix to see which strategy "
+    "always gives YOU the better outcome. Ask me anything first. Just type below."
+)
+
+
 def _label(m: Move) -> str:
     return "Stay Silent" if m == Move.SILENT else "Confess"
 
@@ -236,11 +243,13 @@ async def answer_cell(session_id: str, player_years: int, partner_years: int) ->
             f"{CELL_LESSONS[(r.player_move, r.partner_move)]})."
         )
         fallback = (
-            "You built the whole matrix! A **dominant strategy** is best for you no matter what the other player "
-            "does. **Which is YOUR dominant strategy: Stay Silent or Confess?** Type any question to me below first."
+            "You built the whole matrix! A **dominant strategy** is best for you no matter what the other player does."
         )
     purpose = "challenge" if session.phase == Phase.CHALLENGE else f"feedback_r{r.round}"
-    _say(session, new, await _tutor(session, prompt, purpose=purpose, fallback=fallback))
+    reply = await _tutor(session, prompt, purpose=purpose, fallback=fallback)
+    if session.phase == Phase.CHALLENGE:
+        reply.text = f"{reply.text.rstrip()}\n\n{CHALLENGE_QUESTION}"
+    _say(session, new, reply)
 
     if session.phase == Phase.INTERROGATION:
         await _intro(session, new)

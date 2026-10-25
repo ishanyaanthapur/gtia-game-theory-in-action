@@ -186,3 +186,13 @@ def test_tutor_questions_capped_at_three(client):
     for _ in range(3):
         assert client.post(f"/api/session/{sid}/tutor", json={"message": "hint?"}).status_code == 200
     assert client.post(f"/api/session/{sid}/tutor", json={"message": "hint?"}).status_code == 429
+
+
+def test_challenge_question_is_exact_fixed_text(client):
+    from backend.orchestrator import CHALLENGE_QUESTION
+
+    sid = new_game(client)
+    for move in ("silent", "silent", "confess", "confess"):
+        body = finish_round(client, sid, move)
+    tutor_text = [m for m in body["new_messages"] if m["speaker"] == "tutor"][-1]["text"]
+    assert tutor_text.endswith(CHALLENGE_QUESTION)
