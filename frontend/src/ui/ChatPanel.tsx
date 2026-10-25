@@ -37,7 +37,9 @@ export function ChatPanel({ avatar, messages, view, busy, dialoguePending, usage
   const chatLeft = (challenge ? view?.tutor_questions_left : view?.cop_messages_left) ?? 0;
   const canChat = choosing && !busy && chatLeft > 0;
 
-  useEffect(() => setPending(null), [view?.round, view?.phase]);
+  useEffect(() => {
+    setPending(null);
+  }, [view?.round, view?.phase]);
   const commit = (prediction: Move | null) => {
     if (!pending) return;
     onMove(pending, prediction);

@@ -1,4 +1,4 @@
-import type { AvatarId, Move, PayoffTable, QuizQuestion, QuizResult, QuizSubmission, TurnResponse, Usage } from "./types";
+import type { AvatarId, Move, PayoffTable, QuizQuestion, UltTurn, QuizResult, QuizSubmission, TurnResponse, Usage } from "./types";
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -34,6 +34,11 @@ export const api = {
     call<TurnResponse>(`/session/${id}/cell`, { player_years, partner_years }),
   tutor: (id: string, message: string) => call<TurnResponse>(`/session/${id}/tutor`, { message }),
   dominant: (id: string, move: Move) => call<TurnResponse>(`/session/${id}/dominant`, { move }),
+  ultStart: (avatar: AvatarId) => call<UltTurn>("/ultimatum", { avatar }),
+  ultOffer: (id: string, offer_to_tung: number) => call<UltTurn>(`/ultimatum/${id}/offer`, { offer_to_tung }),
+  ultRespond: (id: string, accept: boolean) => call<UltTurn>(`/ultimatum/${id}/respond`, { accept }),
+  ultTutor: (id: string, message: string) => call<UltTurn>(`/ultimatum/${id}/tutor`, { message }),
+  ultAnswer: (id: string, choice: number) => call<UltTurn>(`/ultimatum/${id}/answer`, { choice }),
   usage: (id: string) => call<Usage>(`/session/${id}/usage`),
   quiz: (phase: "pre" | "post") =>
     call<{ scenario: string; questions: QuizQuestion[]; matrix: PayoffTable | null }>(`/quiz?phase=${phase}`),

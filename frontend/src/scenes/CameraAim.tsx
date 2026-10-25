@@ -6,7 +6,9 @@ import { Vector3, type PerspectiveCamera } from "three";
 export function CameraAim({ target }: { target: [number, number, number] }) {
   const { camera } = useThree();
   const [x, y, z] = target;
-  useEffect(() => camera.lookAt(x, y, z), [camera, x, y, z]);
+  useEffect(() => {
+    camera.lookAt(x, y, z);
+  }, [camera, x, y, z]);
   return null;
 }
 

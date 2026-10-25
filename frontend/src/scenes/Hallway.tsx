@@ -23,7 +23,7 @@ interface DoorDef {
 const DOORS: DoorDef[] = [
   { id: 1, title: "Dilemma Detectives", game: "Prisoner's Dilemma", open: true, pos: [-2.95, 1.25, -4], facing: Math.PI / 2, stand: [-1.9, -4], color: "#3b82f6" },
   { id: 2, title: "Stag Hunt", game: "Coordination game", open: false, pos: [2.95, 1.25, -8], facing: -Math.PI / 2, stand: [1.9, -8], color: "#22c55e" },
-  { id: 3, title: "The Ultimatum", game: "Bargaining game", open: false, pos: [0, 1.25, -13.9], facing: 0, stand: [0, -12.8], color: "#f59e0b" },
+  { id: 3, title: "The Ultimatum", game: "Backward induction", open: true, pos: [0, 1.25, -13.9], facing: 0, stand: [0, -12.8], color: "#f59e0b" },
 ];
 
 const HALF_W = 2.5;
@@ -31,14 +31,14 @@ const Z_MIN = -12.9;
 const Z_MAX = 2.5;
 const SPEED = 3.2;
 
-export function Hallway({ avatar, onEnter, onBack }: { avatar: AvatarId; onEnter: () => void; onBack: () => void }) {
+export function Hallway({ avatar, onEnter, onBack }: { avatar: AvatarId; onEnter: (doorId: number) => void; onBack: () => void }) {
   const [near, setNear] = useState<DoorDef | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const target = useRef<[number, number] | null>(null);
 
   const tryEnter = (door: DoorDef | null) => {
     if (!door) return;
-    if (door.open) onEnter();
+    if (door.open) onEnter(door.id);
     else {
       setToast(`🔒 ${door.title} is coming soon. Try Door 1!`);
       setTimeout(() => setToast(null), 2200);

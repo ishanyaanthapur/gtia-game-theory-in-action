@@ -5,11 +5,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from backend import orchestrator
+from backend import orchestrator, ultimatum_orchestrator as ult
 from backend.config import FRONTEND_DIST
 from backend.game.engine import GameError
 from datetime import datetime
 from typing import Literal
+
+from pydantic import BaseModel, Field
 
 from backend.game import quiz
 from backend.models import (
@@ -82,9 +84,56 @@ async def dominant(session_id: str, body: MoveRequest) -> TurnResponse:
     return await orchestrator.answer_dominant(session_id, body.move)
 
 
+# ---------- Door 3: The Ultimatum ----------
+
+class UltOfferRequest(BaseModel):
+    offer_to_tung: int = Field(ge=0, le=10_000)
+
+
+class UltRespondRequest(BaseModel):
+    accept: bool
+
+
+class UltChoiceRequest(BaseModel):
+    choice: int = Field(ge=0, le=3)
+
+
+@app.post("/api/ultimatum", response_model=ult.UltTurn)
+async def ult_start(body: NewSessionRequest) -> ult.UltTurn:
+    return await ult.start(body.avatar)
+
+
+@app.get("/api/ultimatum/{session_id}", response_model=ult.UltimatumView)
+async def ult_get(session_id: str) -> ult.UltimatumView:
+    return ult.ustore.get(session_id).view()
+
+
+@app.post("/api/ultimatum/{session_id}/offer", response_model=ult.UltTurn)
+async def ult_offer(session_id: str, body: UltOfferRequest) -> ult.UltTurn:
+    return await ult.player_offer(session_id, body.offer_to_tung)
+
+
+@app.post("/api/ultimatum/{session_id}/respond", response_model=ult.UltTurn)
+async def ult_respond(session_id: str, body: UltRespondRequest) -> ult.UltTurn:
+    return await ult.player_respond(session_id, body.accept)
+
+
+@app.post("/api/ultimatum/{session_id}/tutor", response_model=ult.UltTurn)
+async def ult_tutor(session_id: str, body: ChatRequest) -> ult.UltTurn:
+    return await ult.ask_sensei(session_id, body.message)
+
+
+@app.post("/api/ultimatum/{session_id}/answer", response_model=ult.UltTurn)
+async def ult_answer(session_id: str, body: UltChoiceRequest) -> ult.UltTurn:
+    return await ult.answer_challenge(session_id, body.choice)
+
+
 @app.get("/api/session/{session_id}/usage")
 async def usage(session_id: str) -> dict:
-    orchestrator.store.get(session_id)  # 404 if unknown
+    if session_id.startswith("u"):
+        ult.ustore.get(session_id)  # 404 if unknown
+    else:
+        orchestrator.store.get(session_id)  # 404 if unknown
     return session_totals(session_id)
 
 

@@ -367,3 +367,37 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 .badge-chip { font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; border: 1px solid #fbbf24; color: #fde68a; background: rgba(251, 191, 36, 0.1); }
 
 .hall-title { font-weight: 800; color: var(--purple-bright); border-color: var(--purple); text-shadow: 0 0 12px rgba(192, 132, 252, 0.6); }
+
+/* ---------- Door 3: The Ultimatum ---------- */
+.result-card {
+  position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); z-index: 25; min-width: 340px; max-width: 460px;
+  background: rgba(255, 255, 255, 0.97); color: #1e1530; border-radius: 18px; padding: 18px 22px; text-align: center;
+  border: 3px solid #7c3aed; box-shadow: 0 20px 60px rgba(30, 21, 48, 0.35); font-size: 1.15rem; cursor: pointer;
+  animation: pop 0.25s ease-out;
+}
+.result-card p { margin: 0 0 12px; }
+.split { display: flex; flex-direction: column; gap: 4px; }
+.split-bar { display: flex; height: 30px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); font-size: 0.78rem; font-weight: 800; }
+.split-you, .split-tung { display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; transition: width 0.15s; }
+.split-you { background: linear-gradient(90deg, var(--purple-deep), var(--purple)); }
+.split-tung { background: linear-gradient(90deg, #b07a45, var(--partner)); color: #2a1a0a; }
+.offer-slider { width: 100%; accent-color: var(--purple); height: 28px; cursor: pointer; }
+.challenge-options { display: grid; gap: 6px; }
+.ult-final { margin: 4px 0; }
+.ult .side { background: #140c24; }
+.game-tree {
+  position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); width: min(460px, 90%);
+  background: rgba(255, 255, 255, 0.96); color: #1e1530; border-radius: 16px; padding: 12px 16px; border: 2px solid #c4b5fd;
+  box-shadow: 0 12px 40px rgba(30, 21, 48, 0.25);
+}
+.game-tree h3 { margin: 0 0 4px; font-size: 0.95rem; color: #6d28d9; }
+.game-tree p { margin: 4px 0 0; font-size: 0.86rem; line-height: 1.4; }
+.game-tree svg { width: 100%; height: auto; }
+.game-tree text { font: 700 13px Inter, system-ui, sans-serif; fill: #1e1530; }
+.game-tree .node.you { fill: #ddd6fe; stroke: #7c3aed; stroke-width: 2; }
+.game-tree .node.tung { fill: #fde7c8; stroke: #b07a45; stroke-width: 2; }
+.game-tree .edge { stroke: #94a3b8; stroke-width: 2.5; }
+.game-tree .edge.chosen { stroke: #16a34a; stroke-width: 5; }
+.game-tree .edge-label { font-size: 12px; fill: #475569; }
+.game-tree .payoff { font-size: 14px; font-weight: 800; }
+.game-tree.solved { border-color: #16a34a; }

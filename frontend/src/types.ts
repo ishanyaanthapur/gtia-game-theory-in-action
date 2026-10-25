@@ -117,3 +117,45 @@ export interface PayoffTable {
   cols: string[]; // Tung Tung Tung Sahur's move
   cells: [number, number][][]; // years in jail (you, Tung Tung Tung Sahur)
 }
+
+// ---------- Door 3: The Ultimatum (mirrors backend/game/ultimatum.py) ----------
+export type UPhase = "propose" | "respond" | "challenge" | "complete";
+
+export interface URound {
+  round: number;
+  proposer: "player" | "tung";
+  offer_to_responder: number;
+  accepted: boolean;
+  player_gets: number;
+  tung_gets: number;
+  tung_line: string;
+  overridden: boolean;
+}
+
+export interface UltimatumView {
+  session_id: string;
+  avatar: AvatarId;
+  phase: UPhase;
+  round: number;
+  max_rounds: number;
+  proposer: "player" | "tung" | null;
+  pending_offer_to_player: number | null;
+  pot: number;
+  step: number;
+  player_total: number;
+  tung_total: number;
+  rounds: URound[];
+  tutor_questions_left: number;
+  challenge_attempts: number;
+  challenge_found: boolean | null;
+  challenge_options: string[];
+  llm_calls_used: number;
+  llm_calls_limit: number;
+  messages: Message[];
+}
+
+export interface UltTurn {
+  new_messages: Message[];
+  correct: boolean | null;
+  state: UltimatumView;
+}

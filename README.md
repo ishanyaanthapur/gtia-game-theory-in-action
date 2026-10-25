@@ -1,10 +1,17 @@
 # GTiA: Game Theory in Action
 
-A 3D game that teaches game theory by having you play against AI characters. In Door 1,
+A 3D game that teaches game theory by having you play against AI characters. Two doors are open in
+**Equilibrium Hall**. In Door 1,
 **Dilemma Detectives**, you're interrogated about a heist alongside your partner, Tung Tung Tung Sahur, and you build the Prisoner's Dilemma payoff matrix one cell at a time from your own
 choices.
 
 > Status (Oct 23): playable end to end, from avatar select to the hallway to Door 1 to the debrief.
+
+**Door 3, The Ultimatum,** takes place in a bright King's Cross station. You and Tung Tung Tung Sahur
+split 10,000 stolen H100s over 4 alternating rounds. The proposer offers a split; the responder accepts
+or rejects, and a rejection means nobody gets anything. The AI genuinely decides whether to accept and
+what to offer, with personality and memory, while code validates offers and computes payouts. It ends
+with a **backward induction** challenge and a game-tree debrief.
 
 ## Run it (about 2 minutes)
 
@@ -34,6 +41,7 @@ Shortcuts for demos and screenshots:
 - `/?play=kimchi` jumps straight into Door 1.
 - `/?play=kimchi&check=1` starts at the before-check, which is useful for user tests.
 - `/?hall=yoshi` opens the hallway.
+- `/?ultimatum=kimchi` jumps straight into Door 3.
 - `/?preview=pre` and `/?preview=post` open the before- and after-checks in **preview mode**. Answers are graded but never saved, so use these for screenshots and demos.
 
 ## Before/after understanding check (user study)
@@ -51,7 +59,7 @@ Shortcuts for demos and screenshots:
 ## Other commands
 
 ```bash
-.venv/bin/python -m pytest -q              # 61 offline tests (engine, safety, quiz), no API key needed
+.venv/bin/python -m pytest -q              # 88 offline tests (both games, safety, quiz), no API key needed
 .venv/bin/python scripts/smoke_run.py      # one full game against the real agents → output/smoke_run.md
 ```
 

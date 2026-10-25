@@ -441,3 +441,28 @@ database server, so nothing extra to install and the 10-minute run rule stays ea
   - A "WANTED 指名手配" poster taped to the door.
 
   `renderPosterPNG(avatar, kind)` exports flat PNGs for the report.
+
+---
+
+## 18. Door 3: The Ultimatum (Oct 25)
+- **Setting:** a bright, spotless King's Cross (`scenes/KingsCross.tsx`): white arched roof ribs,
+  platforms with yellow safety lines, a white train, the station clock, a bench where you and Tung
+  Tung Tung Sahur sit, Nash-sensei holding the stash, and GPU piles that grow with each player's total.
+- **Rules (code, `backend/game/ultimatum.py`):**
+  - Pot of 10,000; 4 rounds alternating player, Tung Tung Tung Sahur, player, Tung Tung Tung Sahur.
+  - Offers are 0–10,000 in steps of 500. Accept → split; reject → (0, 0).
+  - Guardrail: an offer of 5,000 or more is always accepted (logged override).
+- **Agents (`backend/agents/ultimatum.py`):**
+  - `tung_responder`: the AI genuinely accepts or rejects, with personality and memory.
+  - `tung_proposer`: makes offers; an output validator rejects illegal amounts and retries, with a
+    code fallback after that.
+  - `ult_sensei`: host and tutor.
+- **Challenge:** "If Tung Tung Tung Sahur cared ONLY about GPUs, what's the smallest offer he should
+  accept?" Up to 3 typed questions; a hint on a miss; reveal after 2. Then the debrief: backward
+  induction predicts (9,500, 500) versus what actually happened, plus a game-tree diagram.
+- **Verified with the real AI:** the AI rejected a 1,000 offer ("1,000 is an insult"), later
+  remembered it, offered 3,000 then 4,000; the questions and hints guided without revealing; the
+  debrief was correct.
+- **API:** `/api/ultimatum` (+ `/offer`, `/respond`, `/tutor`, `/answer`). 9 new tests; 88 total.
+- **Also fixed:** `CameraAim` returned a non-function from `useEffect`, which crashed some screen
+  transitions.

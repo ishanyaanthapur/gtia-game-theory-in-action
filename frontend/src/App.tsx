@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AvatarSelect } from "./scenes/AvatarSelect";
 import { Hallway } from "./scenes/Hallway";
 import { GameScreen } from "./game/GameScreen";
+import { UltimatumScreen } from "./game/UltimatumScreen";
 import { Quiz, QuizResults } from "./ui/Quiz";
 import type { AvatarId, QuizResult } from "./types";
 
@@ -10,6 +11,7 @@ type Screen =
   | { name: "hallway"; avatar: AvatarId }
   | { name: "precheck"; avatar: AvatarId; preview?: boolean }
   | { name: "dilemma"; avatar: AvatarId }
+  | { name: "ultimatum"; avatar: AvatarId }
   | { name: "postcheck"; avatar: AvatarId; sessionId: string | null; preview?: boolean }
   | { name: "results"; avatar: AvatarId; result: QuizResult };
 
@@ -26,6 +28,8 @@ function initialScreen(): Screen {
   if (preview === "post") return { name: "postcheck", avatar: "kimchi", sessionId: null, preview: true };
   const play = q.get("play");
   const hall = q.get("hall");
+  const ult = q.get("ultimatum");
+  if (valid(ult)) return { name: "ultimatum", avatar: ult };
   if (valid(play)) return { name: q.get("check") === "1" ? "precheck" : "dilemma", avatar: play };
   if (valid(hall)) return { name: "hallway", avatar: hall };
   return { name: "select" };
@@ -45,9 +49,13 @@ export default function App() {
       return (
         <Hallway
           avatar={screen.avatar}
-          onEnter={() =>
+          onEnter={(doorId) =>
             setScreen(
-              check.stage === "none" ? { name: "precheck", avatar: screen.avatar } : { name: "dilemma", avatar: screen.avatar },
+              doorId === 3
+                ? { name: "ultimatum", avatar: screen.avatar }
+                : check.stage === "none"
+                  ? { name: "precheck", avatar: screen.avatar }
+                  : { name: "dilemma", avatar: screen.avatar },
             )
           }
           onBack={() => setScreen({ name: "select" })}
@@ -95,6 +103,8 @@ export default function App() {
           }}
         />
       );
+    case "ultimatum":
+      return <UltimatumScreen avatar={screen.avatar} onExit={() => setScreen({ name: "hallway", avatar: screen.avatar })} />;
     case "results":
       return <QuizResults result={screen.result} onContinue={() => setScreen({ name: "hallway", avatar: screen.avatar })} />;
   }
