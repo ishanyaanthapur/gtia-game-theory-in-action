@@ -85,7 +85,7 @@ async def get_quiz(phase: Literal["pre", "post"] = "post") -> dict:
         ids = [quiz.pick_pre_question(pre_question_counts())]
         return {"scenario": quiz.SCENARIO, "questions": quiz.public_questions(ids), "matrix": None}
     # After the game the player has built the matrix, so show it (check v2).
-    return {"scenario": quiz.SCENARIO, "questions": quiz.public_questions(), "matrix": quiz.payoff_table()}
+    return {"scenario": quiz.POST_SCENARIO, "questions": quiz.public_questions(), "matrix": quiz.payoff_table()}
 
 
 @app.post("/api/quiz", response_model=QuizResult)

@@ -379,3 +379,14 @@ database server, so nothing extra to install and the 10-minute run rule stays ea
   The tutor now gets the exact progress ("N of 4 cells filled") and is told never to call the
   matrix complete early.
 - **New:** `scripts/export_tester.py` bundles all logs per tester.
+
+## 14. After user test #2 (Oct 25)
+- **Tester `58ff29d7`** (v2): before-question right; after-check 5/5; matrix cells 4/4 on the first
+  try; confidence 5/5, usefulness 5/5; 11.2 min. Mentioned arms races unprompted (not consented for
+  quoting). Logs are in `output/user_tests/2026-10-25_58ff29d7/`.
+- **Their feedback:** the years written in the answer options made it too easy.
+- **Check v3:**
+  - The options no longer contain payoffs ("Stay silent" / "Confess").
+  - The after-check scenario text has no numbers.
+  - The payoff matrix is a sticky header (`position: sticky`), pinned while the player scrolls,
+    so players must read payoffs off the matrix.

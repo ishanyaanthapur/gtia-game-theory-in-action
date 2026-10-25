@@ -10,13 +10,22 @@ from pydantic import BaseModel
 
 from backend.game.payoffs import PAYOFFS, Move
 
-# v1: after-check without the payoff matrix (tester #1, Oct 24). v2: after-check shows the full matrix.
-CHECK_VERSION = 2
+# v1: after-check without the payoff matrix (tester #1, Oct 24).
+# v2: after-check shows the full matrix (tester #2, Oct 25).
+# v3: answer options no longer state the years (tester #2 said that made it too easy); the after-check
+#     matrix is sticky and its scenario text drops the numbers, so players must read payoffs off the matrix.
+CHECK_VERSION = 3
 
 SCENARIO = (
     "You and a partner are arrested and questioned in separate rooms. Each of you can STAY SILENT or "
     "CONFESS. If you confess and your partner stays silent, you go free (0 years) and they get 3 years "
     "(and vice versa). If you both stay silent, you each get 1 year. If you both confess, you each get 2 years."
+)
+
+# After the game the numbers come from the matrix, not from the text.
+POST_SCENARIO = (
+    "Same situation as the game: you and your partner are questioned separately, and each of you can "
+    "STAY SILENT or CONFESS. Use the payoff matrix above to answer."
 )
 
 
@@ -34,7 +43,7 @@ QUESTIONS: list[Question] = [
         id="q1_silent_partner",
         concept="Best response",
         prompt="If your partner STAYS SILENT, what is better for you?",
-        options=["Stay silent (1 year)", "Confess (0 years)", "It makes no difference"],
+        options=["Stay silent", "Confess", "It makes no difference"],
         answer=1,
         explanation="0 years beats 1 year, so confessing is better when your partner stays silent.",
     ),
@@ -42,7 +51,7 @@ QUESTIONS: list[Question] = [
         id="q2_confess_partner",
         concept="Best response",
         prompt="If your partner CONFESSES, what is better for you?",
-        options=["Confess (2 years)", "Stay silent (3 years)", "It makes no difference"],
+        options=["Confess", "Stay silent", "It makes no difference"],
         answer=0,
         explanation="2 years beats 3 years, so confessing is better when your partner confesses too.",
     ),

@@ -64,14 +64,15 @@ export function Quiz({ phase, participantId, sessionId, onDone, onSkip }: Props)
             : "5 quick questions (including the one you saw before). Then you'll see your before vs. after and what each question was testing."}
         </p>
 
+        {/* Sticky: stays pinned at the top while the player scrolls through the questions */}
+        {matrix && <MatrixCard table={matrix} />}
+
         {scenario && (
           <div className="scenario">
             <b>The scenario</b>
             {scenario}
           </div>
         )}
-
-        {matrix && <MatrixCard table={matrix} />}
 
         {questions.map((q, i) => (
           <fieldset key={q.id} className="quiz-q">
@@ -132,7 +133,7 @@ function MatrixCard({ table }: { table: PayoffTable }) {
   return (
     <div className="quiz-matrix">
       <b>The payoff matrix you built</b>
-      <small>Years in jail as (you, Tung Tung Tung Sahur). Lower is better.</small>
+      <small>Years in jail as (you, Tung Tung Tung Sahur). Lower is better. This stays on screen as you scroll.</small>
       <div className="matrix">
         <div className="head" />
         {table.cols.map((c) => (
