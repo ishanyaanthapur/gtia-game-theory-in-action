@@ -64,6 +64,13 @@
   .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 14px; }
   .flow span { background: #fff; border: 2px solid var(--lav); border-radius: 10px; padding: 5px 10px; font-size: 0.5em; font-weight: 700; color: var(--navy); }
   .flow i { font-style: normal; color: var(--purple); font-weight: 900; font-size: 0.6em; }
+  .cta-row { display: flex; gap: 12px; margin-top: 16px; align-items: center; }
+  .reveal a.cta { display: inline-block; background: linear-gradient(135deg, var(--purple-deep), var(--purple)); color: #fff; font-weight: 900;
+    font-size: 0.72em; padding: 10px 26px; border-radius: 999px; box-shadow: 0 10px 24px rgba(91, 63, 168, 0.35); text-decoration: none; }
+  .reveal a.cta.ghost { background: #fff; color: var(--navy); border: 3px solid var(--navy); box-shadow: none; padding: 7px 22px; }
+  .reveal a.cta:hover { filter: brightness(1.1); }
+  .cta-note { font-size: 0.46em; color: var(--muted); margin: 8px 0 0; }
+  .cta-note code { background: var(--lav-2); color: var(--purple-deep); padding: 1px 6px; border-radius: 6px; }
   .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 </style>
 </head>
@@ -79,7 +86,11 @@
       <p class="sub">Get interrogated beside <b>Tung Tung Tung Sahur</b>, build the payoff matrix yourself, then bargain your way to <b>backward induction</b>.</p>
       <div class="flow"><span>🐼 Pick a samurai</span><i>→</i><span>🚪 Walk Equilibrium Hall</span><i>→</i><span>🎮 Choose a door</span><i>→</i><span>🧠 Learn by playing</span></div>
       <div class="chips"><span class="chip navy">Ishanya Anthapur</span><span class="chip">3D game · 3 AI characters</span><span class="chip">gpt-6-luna via Portkey</span></div>
-      <p class="cap" style="margin-top:18px">github.com/ishanyaanthapur/gtia-game-theory-in-action</p>
+      <div class="cta-row">
+        <a class="cta" href="http://127.0.0.1:8000" target="_blank">▶ Play now</a>
+        <a class="cta ghost" href="https://github.com/ishanyaanthapur/gtia-game-theory-in-action" target="_blank">Get the code</a>
+      </div>
+      <p class="cta-note">Runs locally: clone the repo, add your Portkey key, run <code>./run.sh</code> (~1 minute), then Play now opens it at 127.0.0.1:8000.</p>
     </div>
     <div>{{IMG:ui_01_avatar_select}}</div>
   </div>
@@ -244,6 +255,13 @@
     </div>
   </div>
   <p class="big" style="text-align:center; margin-top:18px">Play it. Build it. Name it. <span style="color:var(--purple-deep)">That's how game theory sticks.</span></p>
+  <div style="display:flex; flex-direction:column; align-items:center">
+    <div class="cta-row" style="justify-content:center">
+        <a class="cta" href="http://127.0.0.1:8000" target="_blank">▶ Play now</a>
+        <a class="cta ghost" href="https://github.com/ishanyaanthapur/gtia-game-theory-in-action" target="_blank">Get the code</a>
+      </div>
+      <p class="cta-note">Runs locally: clone the repo, add your Portkey key, run <code>./run.sh</code> (~1 minute), then Play now opens it at 127.0.0.1:8000.</p>
+  </div>
 </section>
 
 </div></div>
