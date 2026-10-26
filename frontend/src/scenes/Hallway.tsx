@@ -1,5 +1,6 @@
 // The hall of doors. Walk with WASD/arrow keys, or click a door to walk to it.
 import { useEffect, useRef, useState } from "react";
+import { audio } from "../audio/engine";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Vector3, type Group } from "three";
 import { AnimalSamurai } from "../characters/AnimalSamurai";
@@ -38,8 +39,9 @@ export function Hallway({ avatar, onEnter, onBack }: { avatar: AvatarId; onEnter
 
   const tryEnter = (door: DoorDef | null) => {
     if (!door) return;
-    if (door.open) onEnter(door.id);
+    if (door.open) (audio.sfx("whoosh"), onEnter(door.id));
     else {
+      audio.sfx("wrong");
       setToast(`🔒 ${door.title} is coming soon. Try Door 1!`);
       setTimeout(() => setToast(null), 2200);
     }

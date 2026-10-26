@@ -1,5 +1,6 @@
 // Door 1: Dilemma Detectives. Owns the session; AI lines play out as click-through speech bubbles.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { audio } from "../audio/engine";
 import { Canvas } from "@react-three/fiber";
 import { CameraRig } from "../scenes/CameraAim";
 import { ApiError, api } from "../api";
@@ -54,6 +55,7 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
   /** Advance the speech bubble: next piece, or move the finished line into the transcript. */
   const next = useCallback(() => {
     if (!current) return;
+    audio.sfx("tick");
     if (piece + 1 < pieces.length) return setPiece(piece + 1);
     setMessages((prev) => [...prev, current]);
     setQueue((q) => q.slice(1));
@@ -118,6 +120,7 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
       : run(() => api.chat(sid, text), "cop", { speaker: "player", text }));
   const onMove = async (m: Move, prediction: Move | null = null) => {
     if (!sid) return;
+    audio.sfx("select");
     if (!challenge) {
       const bet = prediction ? ` · 🔮 I bet he ${prediction === "silent" ? "stayed silent" : "confessed"}` : "";
       run(() => api.move(sid, m, prediction), "cop", { speaker: "player", text: `I choose: **${label(m)}**${bet}` });
@@ -128,17 +131,19 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
       text: `My dominant strategy is: **${label(m)}**`,
     });
     if (resp?.state.phase === "complete") {
+      audio.sfx(resp.correct ? "fanfare" : "step");
       flash(resp.correct ? "🎯 You found the dominant strategy!" : "💡 The dominant strategy is Confess");
       setHighlight((n) => n + 1); // play the matrix animation
     } else if (resp?.correct === false) {
+      audio.sfx("wrong");
       setWrongPulse((n) => n + 1);
     }
   };
   const onCell = async (you: number, them: number) => {
     if (!sid) return;
     const resp = await run(() => api.cell(sid, you, them), "tutor", { speaker: "player", text: `My years: **${you}**, Tung Tung Tung Sahur's: **${them}**` });
-    if (resp?.correct === false) setWrongPulse((n) => n + 1);
-    if (resp?.correct) flash("✨ Cell unlocked!");
+    if (resp?.correct === false) (audio.sfx("wrong"), setWrongPulse((n) => n + 1));
+    if (resp?.correct) (audio.sfx("correct"), flash("✨ Cell unlocked!"));
   };
 
   const bannerTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -155,10 +160,26 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
   const dialoguePending = queue.length > 0;
   const locked = busy || dialoguePending;
 
+  // Leitmotif when a different character starts talking (not on every bubble).
+  const lastSpeaker = useRef<Speaker | null>(null);
+  useEffect(() => {
+    if (!current || current.speaker === lastSpeaker.current) return;
+    lastSpeaker.current = current.speaker;
+    audio.motif(current.speaker);
+  }, [current]);
+
+  // A cute "clink-clink" whenever the scene cuts to the jail cells.
+  const wasInRoom = useRef(true);
+  useEffect(() => {
+    if (wasInRoom.current && !inRoom) audio.sfx("clang");
+    wasInRoom.current = inRoom;
+  }, [inRoom]);
+
   // Show earned points/badges only once every speech bubble has been read.
   useEffect(() => {
     if (busy || dialoguePending || !pendingAwards.current.length) return;
     const batch = pendingAwards.current.splice(0).map((a, i) => ({ ...a, id: Date.now() + i }));
+    batch.forEach((a, i) => setTimeout(() => audio.sfx(a.points ? "coin" : "badge"), i * 260));
     setToasts((t) => [...t, ...batch]);
     const ids = batch.map((b) => b.id);
     // not cleared on re-render on purpose: each batch always removes itself after its fade-out
@@ -169,6 +190,7 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
   useEffect(() => {
     if (!view || !inRoom || view.phase !== "interrogation" || view.round <= lastTwistRound.current) return;
     lastTwistRound.current = view.round;
+    audio.sfx(view.round === 4 ? "alarm" : "whoosh");
     flash(ROUND_TWIST_TITLES[view.round] ?? `Round ${view.round}`, 3200);
   }, [inRoom, view]);
 

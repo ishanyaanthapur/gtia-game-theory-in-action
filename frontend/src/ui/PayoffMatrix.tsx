@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { audio } from "../audio/engine";
 import type { MatrixCell, Move, SessionView } from "../types";
 
 const LABEL: Record<Move, string> = { silent: "Silent", confess: "Confess" };
@@ -68,6 +69,9 @@ export function PayoffMatrix({ view, busy, wrongPulse, onSubmit, highlight = 0, 
     const timers = STEPS.slice(1).map((_, i) => setTimeout(() => setStep(i + 1), STEP_MS * (i + 1)));
     return () => timers.forEach(clearTimeout);
   }, [highlight]);
+  useEffect(() => {
+    if (step !== null) audio.sfx("step");
+  }, [step]);
   const st = step === null ? null : STEPS[step];
   const numClass = (key: Key, who: "you" | "them") => {
     if (!st) return who;

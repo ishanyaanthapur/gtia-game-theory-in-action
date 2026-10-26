@@ -1,6 +1,7 @@
 // Door 3: The Ultimatum at King's Cross. Same click-through dialogue as Door 1; results appear as a
 // centered card, and the side panel holds the offer slider, accept/reject, and the backward-induction challenge.
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { audio } from "../audio/engine";
 import { Canvas } from "@react-three/fiber";
 import Markdown from "react-markdown";
 import { ApiError, api } from "../api";
@@ -39,6 +40,7 @@ export function UltimatumScreen({ avatar, onExit }: { avatar: AvatarId; onExit: 
 
   const next = useCallback(() => {
     if (!current) return;
+    audio.sfx("tick");
     if (current.speaker !== "system" && piece + 1 < pieces.length) return setPiece(piece + 1);
     setMessages((m) => [...m, current]);
     setQueue((q) => q.slice(1));
@@ -79,20 +81,39 @@ export function UltimatumScreen({ avatar, onExit }: { avatar: AvatarId; onExit: 
     start();
   }, [start]);
 
+  // Leitmotif when a new character speaks; a sound for each result card.
+  const lastSpeaker = useRef<string | null>(null);
+  useEffect(() => {
+    if (!current) return;
+    if (current.speaker === "system") {
+      const t = current.text;
+      audio.sfx(t.startsWith("✅") ? "deal" : t.startsWith("❌") ? "reject" : t.startsWith("🤝") ? "coin" : "tick");
+    } else if (current.speaker !== lastSpeaker.current) {
+      audio.motif(current.speaker as Speaker);
+    }
+    lastSpeaker.current = current.speaker;
+  }, [current]);
+
   const sid = view?.session_id;
   const locked = busy || queue.length > 0;
   const phase = view?.phase;
 
   const makeOffer = () =>
-    sid && run(() => api.ultOffer(sid, offer), "partner", { speaker: "player", text: `I offer Tung Tung Tung Sahur **${fmt(offer)}** GPUs (I keep ${fmt(10000 - offer)}).` });
+    sid &&
+    (audio.sfx("select"), true) && run(() => api.ultOffer(sid, offer), "partner", { speaker: "player", text: `I offer Tung Tung Tung Sahur **${fmt(offer)}** GPUs (I keep ${fmt(10000 - offer)}).` });
   const respond = (accept: boolean) =>
     sid &&
+    (audio.sfx("select"), true) &&
     run(() => api.ultRespond(sid, accept), "partner", {
       speaker: "player",
       text: `I **${accept ? "accept" : "reject"}** your offer of ${fmt(view?.pending_offer_to_player ?? 0)}.`,
     });
-  const answer = (i: number) =>
-    sid && run(() => api.ultAnswer(sid, i), "tutor", { speaker: "player", text: `My answer: **${view?.challenge_options[i]}**` });
+  const answer = async (i: number) => {
+    if (!sid) return;
+    audio.sfx("select");
+    const resp = await run(() => api.ultAnswer(sid, i), "tutor", { speaker: "player", text: `My answer: **${view?.challenge_options[i]}**` });
+    if (resp) audio.sfx(resp.correct ? "fanfare" : resp.state.phase === "complete" ? "step" : "wrong");
+  };
   const ask = () => {
     const text = draft.trim();
     if (!text || !sid || locked || !view?.tutor_questions_left) return;

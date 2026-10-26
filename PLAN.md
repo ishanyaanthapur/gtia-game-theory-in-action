@@ -466,3 +466,22 @@ database server, so nothing extra to install and the 10-minute run rule stays ea
 - **API:** `/api/ultimatum` (+ `/offer`, `/respond`, `/tutor`, `/answer`). 9 new tests; 88 total.
 - **Also fixed:** `CameraAim` returned a non-function from `useEffect`, which crashed some screen
   transitions.
+
+## 19. Sound (Oct 25)
+- **Original procedural music** (Web Audio API, `frontend/src/audio/engine.ts`; no audio files, no
+  tokens), in the spirit of upbeat girl-group pop with chiptune "game" synths, not copies of real songs:
+  - Equilibrium Hall: bouncy chiptune pop (C major, 118 bpm)
+  - Door 1: sassy minor groove (A minor, 104 bpm)
+  - Door 3: bright, sparkly King's Cross (D major, 124 bpm)
+- **Leitmotifs** play when a character starts speaking (or comes into the avatar spotlight):
+  - Detective Zhou: noir bass
+  - Tung Tung Tung Sahur: wood block "tung-tung-tung"
+  - Nash-sensei: koto-like pluck in the Japanese "in" scale
+  - Yoshi: "mew" glide
+  - Jujubee: bouncy hop
+  - Kimchi: sly slide plus "munch"
+- **Cute key-moment sounds:** select, Next tick, correct, a gentle "boop" for wrong, coins for points,
+  sparkle for badges, a "clink" for the jail cells, "wee-woo" in round 4, a fanfare for the dominant
+  strategy, chime/"womp" for deal/reject. Music ducks under leitmotifs.
+- **🔊/🔇 toggle**, remembered in localStorage. Audio starts on the first click (browser rule).
+  No vibration or screen shake (user preference).

@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { AudioToggle } from "./audio/AudioToggle";
+import { audio, type TrackName } from "./audio/engine";
 import { AvatarSelect } from "./scenes/AvatarSelect";
 import { Hallway } from "./scenes/Hallway";
 import { GameScreen } from "./game/GameScreen";
@@ -42,6 +44,20 @@ export default function App() {
   const [check, setCheck] = useState<CheckState>({ stage: "none" });
   const [pendingPid] = useState(newParticipantId);
 
+  // Background music follows the screen: the hall theme, then each door's own track.
+  useEffect(() => {
+    const track: TrackName = screen.name === "dilemma" ? "door1" : screen.name === "ultimatum" ? "door3" : "hall";
+    audio.playTrack(track);
+  }, [screen.name]);
+
+  return (
+    <>
+      <AudioToggle />
+      {renderScreen()}
+    </>
+  );
+
+  function renderScreen() {
   switch (screen.name) {
     case "select":
       return <AvatarSelect onPick={(avatar) => setScreen({ name: "hallway", avatar })} />;
@@ -107,5 +123,6 @@ export default function App() {
       return <UltimatumScreen avatar={screen.avatar} onExit={() => setScreen({ name: "hallway", avatar: screen.avatar })} />;
     case "results":
       return <QuizResults result={screen.result} onContinue={() => setScreen({ name: "hallway", avatar: screen.avatar })} />;
+  }
   }
 }

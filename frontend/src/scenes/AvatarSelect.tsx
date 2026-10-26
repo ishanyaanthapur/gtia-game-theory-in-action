@@ -1,5 +1,6 @@
 // Avatar carousel: one samurai in the spotlight; scroll with arrows, arrow keys, mouse wheel, or the cards.
 import { useEffect, useRef, useState } from "react";
+import { audio } from "../audio/engine";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { ContactShadows } from "@react-three/drei";
 import type { Group } from "three";
@@ -18,6 +19,11 @@ export function AvatarSelect({ onPick }: { onPick: (a: AvatarId) => void }) {
   const wheelLock = useRef(0);
   const current = AVATAR_ORDER[((index % N) + N) % N];
   const a = AVATARS[current];
+  const firstRender = useRef(true);
+  useEffect(() => {
+    if (firstRender.current) return void (firstRender.current = false);
+    audio.motif(current); // Yoshi's mew, Jujubee's hop, Kimchi's sly munch
+  }, [current]);
 
   const go = (delta: number) => setIndex((i) => i + delta);
   const goTo = (id: AvatarId) =>
@@ -34,7 +40,7 @@ export function AvatarSelect({ onPick }: { onPick: (a: AvatarId) => void }) {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight") go(1);
       else if (e.key === "ArrowLeft") go(-1);
-      else if (e.key === "Enter") onPick(current);
+      else if (e.key === "Enter") (audio.sfx("select"), onPick(current));
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -99,7 +105,7 @@ export function AvatarSelect({ onPick }: { onPick: (a: AvatarId) => void }) {
         })}
       </div>
 
-      <button className="primary big" onClick={() => onPick(current)}>
+      <button className="primary big" onClick={() => (audio.sfx("select"), onPick(current))}>
         Enter Equilibrium Hall as {a.name} →
       </button>
       <p className="fine" style={{ margin: 0 }}>Scroll, use ← → keys, or click a card to switch characters</p>

@@ -1,6 +1,7 @@
 // Before/after understanding check. Before: ONE rotating question. After: all 5 + ratings.
 // Learning gain = that one question, before vs after, for the same player.
 import { Fragment, useEffect, useState } from "react";
+import { audio } from "../audio/engine";
 import { ApiError, api } from "../api";
 import type { PayoffTable, QuizQuestion, QuizResult } from "../types";
 
@@ -35,6 +36,7 @@ export function Quiz({ phase, participantId, sessionId, onDone, onSkip, preview 
 
   const submit = async () => {
     if (!complete || sending) return;
+    audio.sfx("select");
     setSending(true);
     try {
       const result = await api.submitQuiz({
@@ -84,7 +86,7 @@ export function Quiz({ phase, participantId, sessionId, onDone, onSkip, preview 
             </legend>
             <div className="quiz-options">
               {q.options.map((opt, j) => (
-                <button key={j} className={`quiz-opt ${answers[q.id] === j ? "picked" : ""}`} onClick={() => setAnswers((prev) => ({ ...prev, [q.id]: j }))}>
+                <button key={j} className={`quiz-opt ${answers[q.id] === j ? "picked" : ""}`} onClick={() => (audio.sfx("tick"), setAnswers((prev) => ({ ...prev, [q.id]: j })))}>
                   {opt}
                 </button>
               ))}
@@ -176,6 +178,9 @@ function Scale({ label, low, high, value, onChange }: { label: string; low: stri
 
 export function QuizResults({ result, onContinue }: { result: QuizResult; onContinue: () => void }) {
   const pre = result.pre;
+  useEffect(() => {
+    audio.sfx(result.score >= 4 ? "fanfare" : "badge");
+  }, [result.score]);
   const mark = (ok: boolean) => (ok ? "✓ Right" : "✗ Not yet");
   return (
     <div className="screen quiz-screen">

@@ -401,3 +401,11 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 .game-tree .edge-label { font-size: 12px; fill: #475569; }
 .game-tree .payoff { font-size: 14px; font-weight: 800; }
 .game-tree.solved { border-color: #16a34a; }
+
+/* ---------- sound toggle ---------- */
+.audio-toggle {
+  position: fixed; left: 16px; bottom: 16px; z-index: 50; width: 42px; height: 42px; border-radius: 50%;
+  background: var(--panel); border: 1px solid var(--border); font-size: 1.15rem; line-height: 1;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+.audio-toggle:hover { border-color: var(--purple-bright); }
