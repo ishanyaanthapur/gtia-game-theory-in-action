@@ -25,7 +25,7 @@ from backend.models import (
     SessionView,
     TurnResponse,
 )
-from backend.safety import clean_player_text
+from backend.safety import clean_player_text, screen_player_text
 from backend.usage import find_pre, log_study, pre_question_counts, session_totals
 
 app = FastAPI(title="GTiA: Game Theory in Action")
@@ -161,6 +161,8 @@ async def submit_quiz(body: QuizSubmission) -> QuizResult:
     score, results = quiz.grade(body.answers)
     correct = {r["id"]: r["correct"] for r in results}
     feedback = clean_player_text(body.feedback)[:500] if body.feedback else None
+    if feedback:
+        screen_player_text(body.participant_id, feedback, "quiz_feedback")
     pre = find_pre(body.participant_id) if body.phase == "post" else None
     minutes, link = None, None
     if pre:

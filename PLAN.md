@@ -485,3 +485,14 @@ database server, so nothing extra to install and the 10-minute run rule stays ea
   strategy, chime/"womp" for deal/reject. Music ducks under leitmotifs.
 - **🔊/🔇 toggle**, remembered in localStorage. Audio starts on the first click (browser rule).
   No vibration or screen shake (user preference).
+
+## 20. Teen-safe filter + younger audience (Oct 25)
+- **Audience** widened to middle- and high-school students (no math beyond comparing two numbers).
+- **Filter (`backend/content_filter.py`):** the better-profanity list plus normalization for disguised
+  spellings, applied to cop chat, tutor questions (both doors), and after-check feedback, before any AI
+  call. Blocked text is never sent, shown, or stored; the audit log records only the category.
+- **Self-harm phrases** get a supportive message (trusted adult, 988).
+- **AI replies** are screened too (`run_agent`); a hit falls back to a canned safe line.
+- **False-positive check:** 0 of 453 real AI lines flagged, after fixing "he'll" being read as "hell"
+  (contractions are now expanded before checking).
+- 27 new tests; 115 total. The report is updated (audience, safety row plus screenshot, limits): 14 pages.

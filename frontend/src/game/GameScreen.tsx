@@ -82,6 +82,8 @@ export function GameScreen({ avatar, onExit, onAfterCheck }: Props) {
         return resp;
       } catch (e) {
         const text = e instanceof ApiError ? e.message : "Couldn't reach the game server. Is it running?";
+        // A blocked (or failed) message is taken back out of the transcript so it never stays on screen.
+        if (optimistic) setMessages((prev) => (prev.at(-1) === optimistic ? prev.slice(0, -1) : prev));
         setMessages((prev) => [...prev, { speaker: "system", text: `⚠️ ${text}` }]);
         flash(`⚠️ ${text}`);
       } finally {

@@ -11,7 +11,7 @@ from backend.agents.tutor import tutor_agent
 from backend.game.engine import GameError, GameSession, SessionStore
 from backend.game.payoffs import Move
 from backend.models import Avatar, CopLine, Message, Phase, TurnResponse, TutorReply
-from backend.safety import clean_player_text, looks_like_injection, wrap_player_text
+from backend.safety import clean_player_text, looks_like_injection, screen_player_text, wrap_player_text
 from backend.usage import audit
 
 store = SessionStore()
@@ -123,6 +123,7 @@ async def chat_with_cop(session_id: str, raw_text: str) -> TurnResponse:
     text = clean_player_text(raw_text)
     if not text:
         raise GameError("Say something first.", status=422)
+    screen_player_text(session.session_id, text, "cop_chat")
     session.register_cop_message()
     if looks_like_injection(text):
         audit(session.session_id, "injection_attempt", text=text)
@@ -276,6 +277,7 @@ async def ask_tutor(session_id: str, raw_text: str) -> TurnResponse:
     text = clean_player_text(raw_text)
     if not text:
         raise GameError("Type a question first.", status=422)
+    screen_player_text(session.session_id, text, "tutor_question")
     session.register_tutor_question()
     if looks_like_injection(text):
         audit(session.session_id, "injection_attempt", text=text)

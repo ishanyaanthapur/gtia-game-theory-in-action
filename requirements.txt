@@ -1,6 +1,7 @@
 annotated-doc==0.0.5
 annotated-types==0.8.0
 anyio==4.15.1
+better-profanity==0.7.0
 cached-property==2.0.1
 certifi==2026.10.23
 charset-normalizer==3.5.2
@@ -29,6 +30,7 @@ pydantic-ai-slim==2.60.0
 pydantic-graph==2.60.0
 pydantic_core==2.50.1
 Pygments==2.21.0
+pypdf==6.21.2
 pytest==9.1.1
 pytest-asyncio==1.4.0
 python-dotenv==1.2.4

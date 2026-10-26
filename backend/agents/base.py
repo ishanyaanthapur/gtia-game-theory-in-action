@@ -9,11 +9,13 @@ from portkey_ai import PORTKEY_GATEWAY_URL, createHeaders
 from pydantic_ai import Agent
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
+from pydantic_ai.exceptions import UnexpectedModelBehavior
 from pydantic_ai.usage import UsageLimits
 
 from backend.config import MODEL_NAME, PROMPTS_DIR, require_api_key
 from backend.game.engine import GameSession
 from backend.game.payoffs import Move
+from backend.content_filter import check as check_content
 from backend.usage import audit, log_tokens
 
 # Per-agent-run cap: one structured answer, a couple of read-only tool calls, one retry.
@@ -56,6 +58,15 @@ def load_prompt(name: str) -> str:
     return (PROMPTS_DIR / f"{name}.md").read_text()
 
 
+def _screen_ai_output(session_id: str, agent: str, purpose: str, output: object) -> None:
+    """Teen-safe check on what the AI says; a hit swaps in the orchestrator's canned fallback line."""
+    for field in ("text", "line"):
+        value = getattr(output, field, None)
+        if isinstance(value, str) and check_content(value):
+            audit(session_id, "output_blocked", agent=agent, purpose=purpose, field=field)
+            raise UnexpectedModelBehavior(f"{agent} output failed the content filter")
+
+
 async def run_agent(agent: Agent[GameDeps, T], prompt: str, deps: GameDeps, *, purpose: str) -> T:
     """Run one agent with the session budget, per-run limits, and token logging."""
     session = deps.session
@@ -64,5 +75,6 @@ async def run_agent(agent: Agent[GameDeps, T], prompt: str, deps: GameDeps, *, p
     result = await agent.run(prompt, deps=deps, model=get_model(), usage_limits=RUN_LIMITS)
     latency_ms = int((time.perf_counter() - start) * 1000)
     log_tokens(session.session_id, agent.name or "agent", purpose, result.usage, latency_ms)
+    _screen_ai_output(session.session_id, agent.name or "agent", purpose, result.output)
     audit(session.session_id, "agent_output", agent=agent.name, purpose=purpose, output=result.output.model_dump())
     return result.output

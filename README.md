@@ -59,7 +59,7 @@ Shortcuts for demos and screenshots:
 ## Other commands
 
 ```bash
-.venv/bin/python -m pytest -q              # 88 offline tests (both games, safety, quiz), no API key needed
+.venv/bin/python -m pytest -q              # 115 offline tests (both games, safety, teen-safe filter, quiz), no API key needed
 .venv/bin/python scripts/smoke_run.py      # one full game against the real agents → output/smoke_run.md
 ```
 

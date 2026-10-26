@@ -18,7 +18,7 @@ from backend.game.ultimatum import (
 )
 from backend.models import Avatar, Message
 from backend.orchestrator import AGENT_FAILURES
-from backend.safety import clean_player_text, looks_like_injection, wrap_player_text
+from backend.safety import clean_player_text, looks_like_injection, screen_player_text, wrap_player_text
 from backend.usage import audit
 
 ustore = UltimatumStore()
@@ -160,6 +160,7 @@ async def ask_sensei(session_id: str, raw_text: str) -> UltTurn:
     text = clean_player_text(raw_text)
     if not text:
         raise GameError("Type a question first.", status=422)
+    screen_player_text(s.session_id, text, "ult_tutor_question")
     s.register_tutor_question()
     if looks_like_injection(text):
         audit(s.session_id, "injection_attempt", text=text)

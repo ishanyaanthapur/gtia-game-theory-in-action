@@ -60,6 +60,8 @@ export function UltimatumScreen({ avatar, onExit }: { avatar: AvatarId; onExit: 
       return resp;
     } catch (e) {
       const text = e instanceof ApiError ? e.message : "Couldn't reach the game server. Is it running?";
+      // A blocked (or failed) message is taken back out of the transcript so it never stays on screen.
+      if (mine) setMessages((m) => (m.at(-1) === mine ? m.slice(0, -1) : m));
       setMessages((m) => [...m, { speaker: "system", text: `⚠️ ${text}` }]);
     } finally {
       setBusy(false);
