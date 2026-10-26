@@ -35,6 +35,7 @@
   .card.us h3, .card.us p { color: #fff; }
   .stat { background: #fff; border-radius: 18px; border: 2px solid var(--lav); padding: 16px 18px; text-align: center; }
   .stat b { display: block; font-size: 1.55em; color: var(--purple-deep); line-height: 1.1; }
+  .stat span b { display: inline; font-size: 1em; color: var(--navy); }
   .stat span { font-size: 0.6em; color: var(--muted); }
   .stat.navy { background: var(--navy); border-color: var(--navy); }
   .stat.navy b, .stat.navy span { color: #fff; }
@@ -58,6 +59,11 @@
   .reveal .controls { color: var(--purple-deep); }
   .diagram { width: 100%; height: auto; }
   .title-slide { display: grid; grid-template-columns: 1.05fr 1fr; gap: 30px; align-items: center; }
+  .label { font-size: 0.62em; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: var(--purple-deep); }
+  .label.us { color: var(--navy); }
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 14px; }
+  .flow span { background: #fff; border: 2px solid var(--lav); border-radius: 10px; padding: 5px 10px; font-size: 0.5em; font-weight: 700; color: var(--navy); }
+  .flow i { font-style: normal; color: var(--purple); font-weight: 900; font-size: 0.6em; }
   .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 </style>
 </head>
@@ -71,6 +77,7 @@
       <div class="kicker">MGT 409 · AI Fundamentals · Final Project</div>
       <h1>GTiA: learn game theory by playing it against AI</h1>
       <p class="sub">Get interrogated beside <b>Tung Tung Tung Sahur</b>, build the payoff matrix yourself, then bargain your way to <b>backward induction</b>.</p>
+      <div class="flow"><span>🐼 Pick a samurai</span><i>→</i><span>🚪 Walk Equilibrium Hall</span><i>→</i><span>🎮 Choose a door</span><i>→</i><span>🧠 Learn by playing</span></div>
       <div class="chips"><span class="chip navy">Ishanya Anthapur</span><span class="chip">3D game · 3 AI characters</span><span class="chip">gpt-6-luna via Portkey</span></div>
       <p class="cap" style="margin-top:18px">github.com/ishanyaanthapur/gtia-game-theory-in-action</p>
     </div>
@@ -109,16 +116,21 @@
 <!-- 3. WHAT'S NEW -->
 <section>
   <h2>GTiA makes you build the matrix and name the strategy yourself</h2>
+  <div class="grid4" style="margin-bottom:6px">
+    <div class="label" style="grid-column: span 3">Others:</div>
+    <div class="label us">Us:</div>
+  </div>
   <div class="grid4">
     <div class="card"><h3>Evolution of Trust</h3><p>Beautiful, but scripted. You never build the matrix.</p></div>
     <div class="card"><h3>MobLab / Veconlab</h3><p>Real experiments, but they need a whole class and peers.</p></div>
     <div class="card"><h3>ChatGPT / Khanmigo</h3><p>Patient, but text-only, and it can misstate payoffs.</p></div>
     <div class="card us"><h3>GTiA ✦</h3><p>Play → build the matrix → name the dominant strategy → measured learning.</p></div>
   </div>
-  <div class="grid3" style="margin-top:22px">
-    <div class="stat"><b>4 cells</b><span>guaranteed in ≤ 4 rounds by a code "coverage controller"</span></div>
-    <div class="stat"><b>0 numbers</b><span>decided by the AI: code is the referee, AI is the voice</span></div>
-    <div class="stat navy"><b>Teen-safe</b><span>every message filtered: ready for middle-school classrooms</span></div>
+  <div class="label" style="margin-top:22px; margin-bottom:6px">What We Do:</div>
+  <div class="grid3">
+    <div class="stat"><b style="font-size:1.2em">2 games</b><span>teaching two of game theory's most interesting ideas: the <b>Prisoner's Dilemma</b> and <b>backward induction</b></span></div>
+    <div class="stat"><b style="font-size:1.2em">6 agents + 1 real user</b><span>3 AI characters in 6 roles play against one real student, while code referees every number</span></div>
+    <div class="stat navy"><b style="font-size:1.2em">Teen-safe</b><span>every message filtered: ready for middle-school classrooms</span></div>
   </div>
 </section>
 
@@ -142,10 +154,11 @@
 <!-- 5. DEMO DOOR 1 -->
 <section>
   <h2>Door 1: get interrogated, fill the matrix, find the dominant strategy</h2>
+  <div class="flow" style="margin:0 0 14px"><span>1-question before-check</span><i>→</i><span>Stay Silent or Confess + 🔮 bet</span><i>→</i><span>Tung Tung Tung Sahur decides</span><i>→</i><span>Verdict + jail cells</span><i>→</i><span>Type the years into the matrix</span><i>→</i><span>×4 rounds</span><i>→</i><span>Name the dominant strategy</span><i>→</i><span>After-check</span></div>
   <div class="grid3">
-    <div>{{IMG:d1_01_interrogation_cop}}<div class="cap"><b>1 · Interrogation.</b> Detective Zhou lays out the deal in click-through bubbles.</div></div>
-    <div>{{IMG:d1_05_cells_tutor_matrix}}<div class="cap"><b>2 · Build the matrix.</b> Each round lands in a new cell; you type the years.</div></div>
-    <div>{{IMG:d1_11_highlight_nash}}<div class="cap"><b>3 · Name it, then see it.</b> Pick the dominant strategy; the matrix animates the answer.</div></div>
+    <div>{{IMG:d1_01_interrogation_cop}}<div class="cap"><b>1 · Interrogation.</b> Detective Zhou lays out the deal in click-through bubbles; ask him up to 3 questions per round. Tung Tung Tung Sahur sweats in Room B.</div></div>
+    <div>{{IMG:d1_05_cells_tutor_matrix}}<div class="cap"><b>2 · Build the matrix.</b> Each round lands in a new cell (guaranteed: all 4 in 4 rounds); you type both players' years, and Nash-sensei hints if you miss.</div></div>
+    <div>{{IMG:d1_11_highlight_nash}}<div class="cap"><b>3 · Name it, then see it.</b> You must pick the dominant strategy yourself; then the matrix animates 0 &lt; 1, 2 &lt; 3, and the Nash equilibrium.</div></div>
   </div>
   <div class="chips" style="justify-content:center"><span class="chip">🔮 prediction bets</span><span class="chip">⭐ points + 🔥 streaks</span><span class="chip">🏅 badges</span><span class="chip">🧪 🍩 🚨 round twists</span><span class="chip">🎵 original music</span></div>
 </section>
@@ -153,6 +166,7 @@
 <!-- 6. DEMO DOOR 3 -->
 <section>
   <h2>Door 3: bargain at King's Cross and discover backward induction</h2>
+  <div class="flow" style="margin:0 0 14px"><span>Split 10,000 stolen GPUs</span><i>→</i><span>You offer (slider)</span><i>→</i><span>AI accepts or rejects</span><i>→</i><span>He offers, you decide</span><i>→</i><span>×2 (4 rounds)</span><i>→</i><span>Backward-induction challenge</span><i>→</i><span>Game-tree debrief</span></div>
   <div class="grid2">
     <div>{{IMG:d3_04_result_card}}<div class="cap">You offer a split of 10,000 stolen GPUs; the AI accepts or rejects. A rejection means nobody gets anything.</div></div>
     <div>{{IMG:d3_07_debrief_game_tree}}<div class="cap">Theory says offer 500 → (9,500, 500). Then the debrief compares that with what you two actually did.</div></div>
