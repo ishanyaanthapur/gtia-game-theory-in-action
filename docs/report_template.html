@@ -352,13 +352,24 @@ test_content_filter.py::test_no_false_positives_on_logged_ai_lines
   <li>Laptop-only (keyboard and mouse), English-only, and the 3D scenes need a WebGL-capable browser.</li>
 </ul>
 <h3>What I would build next, with another month</h3>
+<p>The two highest-value next steps, in order:</p>
 <ol>
-  <li><b>A classroom pilot with a control group</b>: half the section gets a lecture slide, half plays GTiA; compare the same 5-question check a week later.</li>
-  <li><b>Door 2: Stag Hunt</b>, reusing the 2×2 engine to teach coordination and multiple equilibria, as a contrast to the Prisoner's Dilemma.</li>
-  <li><b>Hosting with a real data layer:</b> one FastAPI service plus SQLite → Postgres (participants, checks, answers, sessions, rounds, agent_runs), with per-IP limits and a daily spend cap.</li>
-  <li><b>A teacher dashboard:</b> per-concept misconceptions across a class, straight from the logs.</li>
-  <li><b>Cost:</b> drop tool round-trips, measure exact cached-input pricing, and A/B a smaller model for the partner's one-liners.</li>
+  <li><b>A teacher dashboard (top priority).</b> Everything a teacher needs is already in the logs: each student's
+    before/after answers, which matrix cells they missed on the first try, whether they found the dominant strategy, what they
+    asked the tutor, and how they bargained in Door 3. The dashboard would show, per class: <b>which concept most students still
+    miss</b> (e.g. "60% confuse 'best for both' with 'dominant'"), each student's before → after change, time spent, and flagged
+    sessions (blocked messages by category, never content). Teachers could assign a door as homework and see results the next
+    morning, which turns GTiA from a game into a classroom tool. It needs a real data layer (SQLite → Postgres: participants,
+    checks, answers, sessions, rounds, agent_runs) and a simple class code instead of accounts.</li>
+  <li><b>More gamification for Door 3, The Ultimatum.</b> Door 1 now has bets, points, streaks, badges, and round twists; Door 3
+    doesn't yet. Next: a <b>GPU leaderboard</b> (final haul and "GPUs lost to rejections"), <b>a reputation meter</b> that shows
+    Tung Tung Tung Sahur's trust in you rising and falling with each offer, <b>badges</b> like "Fair Dealer" (every offer
+    40–60%), "Shark" (a lowball accepted), and "Backward Inductor" (challenge solved first try), <b>round twists</b> at King's Cross
+    (a train delay that shrinks the pot, a rival thief), and a predict-the-response bet before he decides.</li>
 </ol>
+<p>After those: a classroom pilot with a control group (lecture slide versus GTiA, same 5-question check a week later); Door 2,
+  Stag Hunt, reusing the 2×2 engine; hosting with per-IP limits and a daily spend cap; and cost work (drop tool round-trips,
+  measure exact cached-input pricing).</p>
 
 <p class="small" style="margin-top:28px">AI assistance: built with Claude Code (pair-programming, tests, report drafting); all numbers in this report come from the
   project's own logs (<code>output/token_log.jsonl</code>, <code>output/audit_trail.jsonl</code>, <code>output/user_study.jsonl</code>).</p>

@@ -1,6 +1,7 @@
-"""Build docs/report.html: a single self-contained file with every screenshot embedded (base64).
+"""Build docs/report.html (and docs/slides.html): single self-contained files with every screenshot embedded.
 
-    .venv/bin/python scripts/build_report.py
+    .venv/bin/python scripts/build_report.py                                  # report
+    .venv/bin/python scripts/build_report.py slides_template.html slides.html # slides
 
 Placeholders in docs/report_template.html:
   {{IMG:name}}   -> <img> with output/screenshots/<name>.jpg inlined
@@ -36,7 +37,7 @@ def main(template: str = "report_template.html", out: str = "report.html") -> No
     def img(m: re.Match) -> str:
         path = SHOTS / f"{m.group(1)}.jpg"
         data = base64.b64encode(path.read_bytes()).decode()
-        return f'<img src="data:image/jpeg;base64,{data}" alt="{m.group(1).replace("_", " ")}" loading="lazy" />'
+        return f'<img class="shot" src="data:image/jpeg;base64,{data}" alt="{m.group(1).replace("_", " ")}" />'
 
     html = re.sub(r"\{\{IMG:([\w-]+)\}\}", img, html)
     html = re.sub(r"\{\{SVG:([\w-]+)\}\}", lambda m: (DOCS / f"{m.group(1)}.svg").read_text(), html)
