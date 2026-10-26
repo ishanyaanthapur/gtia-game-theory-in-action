@@ -440,3 +440,7 @@
 {"ts": "2026-10-26T01:58:56+00:00", "session_id": "ue642872b6aa", "agent": "ult_sensei", "purpose": "ult_challenge", "requests": 1, "input_tokens": 996, "cached_input_tokens": 0, "output_tokens": 71, "latency_ms": 2156}
 {"ts": "2026-10-26T01:59:18+00:00", "session_id": "ue642872b6aa", "agent": "ult_sensei", "purpose": "ult_question", "requests": 1, "input_tokens": 825, "cached_input_tokens": 0, "output_tokens": 74, "latency_ms": 2272}
 {"ts": "2026-10-26T02:21:46+00:00", "session_id": "c1daf5dfe6c3", "agent": "cop", "purpose": "intro_r1", "requests": 2, "input_tokens": 2412, "cached_input_tokens": 1054, "output_tokens": 185, "latency_ms": 1499}
+{"ts": "2026-10-26T02:28:57+00:00", "session_id": "711288a51ca0", "agent": "cop", "purpose": "intro_r1", "requests": 1, "input_tokens": 1182, "cached_input_tokens": 0, "output_tokens": 135, "latency_ms": 1570}
+{"ts": "2026-10-26T02:31:36+00:00", "session_id": "1e4589e8b6b6", "agent": "cop", "purpose": "intro_r1", "requests": 2, "input_tokens": 2412, "cached_input_tokens": 2088, "output_tokens": 157, "latency_ms": 1443}
+{"ts": "2026-10-26T02:33:18+00:00", "session_id": "1e4589e8b6b6", "agent": "cop", "purpose": "chat_r1", "requests": 2, "input_tokens": 2434, "cached_input_tokens": 1065, "output_tokens": 153, "latency_ms": 4382}
+{"ts": "2026-10-26T02:33:39+00:00", "session_id": "1e4589e8b6b6", "agent": "cop", "purpose": "chat_r1", "requests": 1, "input_tokens": 1189, "cached_input_tokens": 1034, "output_tokens": 62, "latency_ms": 2366}

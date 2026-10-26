@@ -43,7 +43,7 @@
   li { margin: 3px 0; }
   .toc { columns: 2; font-size: 0.92rem; margin: 6px 0 0; }
   @media print {
-    body { background: #fff; font-size: 12.5px; }
+    body { background: #fff; font-size: 14px; }
     main { box-shadow: none; padding: 0 10px; max-width: none; }
     h2 { break-after: avoid; margin-top: 28px; }
     h3 { break-after: avoid; }
@@ -60,9 +60,8 @@
 <!-- ======================= 1. TITLE + LINKS ======================= -->
 <header>
   <h1><small>MGT 409 · AI Fundamentals · Final Project</small>GTiA: Game Theory in Action</h1>
-  <p class="lede"><b>One sentence:</b> GTiA is a 3D game where you learn game theory by <i>playing</i> it against AI characters: you get
-    interrogated as a samurai animal next to your partner-in-crime Tung Tung Tung Sahur, build the Prisoner's Dilemma payoff
-    matrix yourself one round at a time, and then haggle over stolen GPUs at King's Cross to discover backward induction.</p>
+  <p class="lede"><b>One sentence:</b> GTiA is a 3D game that teaches game theory by having students play against AI characters,
+    building the Prisoner's Dilemma payoff matrix themselves and discovering backward induction by bargaining over stolen GPUs.</p>
   <div class="meta">
     <b>Author</b><span>Ishanya Anthapur (ishanya.anthapur@yale.edu)</span>
     <b>Repository</b><span><a href="https://github.com/ishanyaanthapur/gtia-game-theory-in-action">github.com/ishanyaanthapur/gtia-game-theory-in-action</a> (private; <code>zlisto</code> invited)</span>
@@ -91,12 +90,18 @@
 <p><b>How they handle it now.</b> A lecture shows a 2×2 payoff matrix, the instructor circles the dominant strategy and the Nash
   equilibrium, and students do problem sets. Some instructors run live classroom experiments, which take class time, setup, and a full
   room of participants.</p>
-<p><b>What it costs them.</b> The concepts are abstract and the matrix is handed to students rather than discovered, so the classic
+<p><b>What it costs them.</b> <i>Time:</i> a live classroom experiment takes a class session, setup, and a full room of
+  participants, so most students never get one; a student who misses the idea has no opponent to practice against at 11 p.m.
+  <i>Money:</i> experiment platforms charge per seat, and one-on-one tutoring costs far more than the ~$0.10 per student-month GTiA
+  costs to run (§5). <i>Frustration and misunderstanding:</i> the concepts are abstract and the matrix is handed to students rather than discovered, so the classic
   confusion survives: mixing up <i>"the outcome that is best for both of us"</i> with <i>"the choice that is best for me no matter what the
   other person does."</i> My very first tester showed exactly this: after playing an early version they rated their confidence
   <b>5/5</b> but scored <b>1/5</b> on the concept check, choosing cooperative "best for both" answers for dominant strategy and Nash
   equilibrium (§7). Confidence without understanding is the expensive failure mode: it walks into the exam, the negotiation, and the
   pricing decision.</p>
+<p><b>Why anyone should care.</b> The Prisoner's Dilemma and bargaining are everywhere: price wars, arms races, climate
+  agreements, group projects, salary negotiations. People who can spot a dominant strategy, or see why an "unfair" offer gets
+  rejected, make better decisions as managers, voters, and teammates, and teenagers can learn it years before college.</p>
 <p><b>The bet.</b> If students <i>live</i> the dilemma (sit in the interrogation chair, get betrayed, fill in the payoff themselves,
   and then have to name the dominant strategy before anyone tells them), the concept sticks. AI characters make that possible for a
   single student at any time, with no classroom of human opponents required.</p>
@@ -144,6 +149,17 @@
   prompt can never talk the game into a different outcome.</p>
 {{SVG:architecture}}
 <p class="small">Figure: architecture. Solid arrows are requests; every agent call passes through <code>run_agent()</code>, which enforces budgets and logs tokens.</p>
+<h3>Who hands work to whom (per player action)</h3>
+<table>
+  <tr><th>Player action</th><th>Hand-off order (orchestrator → engine / agents)</th></tr>
+  <tr><td>Enter Door 1 / new round</td><td>engine opens round → <b>cop</b> intro (twist for rounds 2–4)</td></tr>
+  <tr><td>Type a question to the cop</td><td>teen-safe filter → engine counts it (max 3) → <b>cop</b> answers in character</td></tr>
+  <tr><td>Choose Silent/Confess (+ bet)</td><td>engine computes allowed partner moves → <b>partner</b> decides (validator) → engine computes sentence + points → <b>cop</b> announces verdict → <b>tutor</b> asks for the matrix cell</td></tr>
+  <tr><td>Type years into the matrix</td><td>engine grades → <b>tutor</b> hint or feedback (with code-supplied lesson + progress) → next round's <b>cop</b> intro, or the challenge</td></tr>
+  <tr><td>Name the dominant strategy</td><td>engine grades → <b>tutor</b> hint, or debrief + matrix highlight</td></tr>
+  <tr><td>Door 3: make an offer</td><td>engine validates → <b>Tung (responder)</b> accepts/rejects → engine pays out → <b>Tung (proposer)</b> makes his offer (validator)</td></tr>
+  <tr><td>Door 3: accept/reject</td><td>engine pays out (no AI call) → next round or <b>Nash-sensei</b> backward-induction challenge → debrief</td></tr>
+</table>
 
 <h3>Model choice: gpt-6-luna via Portkey</h3>
 <ul>
@@ -228,6 +244,12 @@
   Per-call means by agent: cop 1,365 in / 92 out; tutor 1,927 in / 89 out; partner 1,853 in / 88 out; Door 3 agents 828–874 in / 78–101 out. Mean latency 1.1–1.9 s per call.
   The three testers' games used 33,612, 33,853 and 54,322 input tokens (the last on the gamified version with 4 typed questions).</p>
 
+<p><b>Raw evidence:</b> the first four lines a tester's game (#2) wrote to <code>output/token_log.jsonl</code>; the game also shows a live
+  usage meter (bottom-right of the transcript panel, e.g. "AI calls 4/50 · in 7,241 · cached 2,088 · out 408" in the Door 1 screenshot in §4).</p>
+<pre>{"agent": "cop",     "purpose": "intro_r1",   "requests": 2, "input_tokens": 2371, "cached_input_tokens": 1033, "output_tokens": 160, "latency_ms": 1285}
+{"agent": "partner", "purpose": "partner_r1", "requests": 3, "input_tokens": 2211, "cached_input_tokens": 0,    "output_tokens": 95,  "latency_ms": 1554}
+{"agent": "cop",     "purpose": "verdict_r1", "requests": 1, "input_tokens": 1176, "cached_input_tokens": 0,    "output_tokens": 86,  "latency_ms": 246}
+{"agent": "tutor",   "purpose": "ask_r1",     "requests": 1, "input_tokens": 1047, "cached_input_tokens": 0,    "output_tokens": 59,  "latency_ms": 231}</pre>
 <h3>Cost per run, per user, and at scale</h3>
 <div class="callout warn"><b>Price used.</b> I don't have a published per-token price for <code>gpt-6-luna</code>. I use the
   <b>effective rate measured on my Portkey account</b>: $26.23 for 55.5M tokens over 90 days = <b>$0.47 per million tokens</b>
@@ -329,7 +351,7 @@ test_content_filter.py::test_no_false_positives_on_logged_ai_lines
     mean-but-clean message, and it is English-only. The 988 referral is US-specific. A school deployment would add a moderation model.</li>
   <li>Laptop-only (keyboard and mouse), English-only, and the 3D scenes need a WebGL-capable browser.</li>
 </ul>
-<h3>What I would build next</h3>
+<h3>What I would build next, with another month</h3>
 <ol>
   <li><b>A classroom pilot with a control group</b>: half the section gets a lecture slide, half plays GTiA; compare the same 5-question check a week later.</li>
   <li><b>Door 2: Stag Hunt</b>, reusing the 2×2 engine to teach coordination and multiple equilibria, as a contrast to the Prisoner's Dilemma.</li>
