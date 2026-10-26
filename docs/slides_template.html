@@ -134,26 +134,9 @@
   </div>
 </section>
 
-<!-- 4. AGENTS -->
+<!-- 4. DEMO GAME 1 -->
 <section>
-  <h2>Three AI characters talk; code referees every number</h2>
-  <div class="grid2" style="grid-template-columns: 1.55fr 1fr">
-    <div>{{SVG:architecture}}</div>
-    <div>
-      <ul class="tight">
-        <li><b>Detective Zhou</b>: interrogates and announces verdicts</li>
-        <li><b>Tung Tung Tung Sahur</b>: picks moves; in Door 3 he <i>really decides</i> to accept or reject</li>
-        <li><b>Nash-sensei</b>: hints, challenges, and debriefs, without giving answers away</li>
-        <li><b>No AI boss:</b> a Python orchestrator runs turns; agents get read-only tools and typed, validated outputs</li>
-      </ul>
-      <div class="chips"><span class="chip navy">6 agent roles</span><span class="chip">pydantic-ai</span><span class="chip">~1.5 s / call</span></div>
-    </div>
-  </div>
-</section>
-
-<!-- 5. DEMO DOOR 1 -->
-<section>
-  <h2>Door 1: get interrogated, fill the matrix, find the dominant strategy</h2>
+  <h2>Game 1: get interrogated, fill the matrix, find the dominant strategy</h2>
   <div class="flow" style="margin:0 0 14px"><span>1-question before-check</span><i>→</i><span>Stay Silent or Confess + 🔮 bet</span><i>→</i><span>Tung Tung Tung Sahur decides</span><i>→</i><span>Verdict + jail cells</span><i>→</i><span>Type the years into the matrix</span><i>→</i><span>×4 rounds</span><i>→</i><span>Name the dominant strategy</span><i>→</i><span>After-check</span></div>
   <div class="grid3">
     <div>{{IMG:d1_01_interrogation_cop}}<div class="cap"><b>1 · Interrogation.</b> Detective Zhou lays out the deal in click-through bubbles; ask him up to 3 questions per round. Tung Tung Tung Sahur sweats in Room B.</div></div>
@@ -163,9 +146,9 @@
   <div class="chips" style="justify-content:center"><span class="chip">🔮 prediction bets</span><span class="chip">⭐ points + 🔥 streaks</span><span class="chip">🏅 badges</span><span class="chip">🧪 🍩 🚨 round twists</span><span class="chip">🎵 original music</span></div>
 </section>
 
-<!-- 6. DEMO DOOR 3 -->
+<!-- 5. DEMO GAME 3 -->
 <section>
-  <h2>Door 3: bargain for GPUs and discover backward induction</h2>
+  <h2>Game 3: bargain for GPUs and discover backward induction</h2>
   <div class="flow" style="margin:0 0 14px"><span>Split 10,000 stolen GPUs</span><i>→</i><span>You offer (slider)</span><i>→</i><span>AI accepts or rejects</span><i>→</i><span>He offers, you decide</span><i>→</i><span>×2 (4 rounds)</span><i>→</i><span>Backward-induction challenge</span><i>→</i><span>Game-tree debrief</span></div>
   <div class="grid2">
     <div>{{IMG:d3_04_result_card}}<div class="cap">You offer a split of 10,000 stolen GPUs; the AI accepts or rejects. A rejection means nobody gets anything.</div></div>
@@ -174,13 +157,30 @@
   <div class="quote">The AI really decides: it rejected a 1,000 offer ("1,000 is an insult!") and remembered it two rounds later.</div>
 </section>
 
+<!-- 6. AGENTS -->
+<section>
+  <h2>Three AI characters talk; code referees every number</h2>
+  <div class="grid2" style="grid-template-columns: 1.55fr 1fr">
+    <div>{{SVG:architecture}}</div>
+    <div>
+      <ul class="tight">
+        <li><b>Detective Zhou</b>: interrogates and announces verdicts</li>
+        <li><b>Tung Tung Tung Sahur</b>: picks moves; in Game 3 he <i>really decides</i> to accept or reject</li>
+        <li><b>Nash-sensei</b>: hints, challenges, and debriefs, without giving answers away</li>
+        <li><b>No AI boss:</b> a Python orchestrator runs turns; agents get read-only tools and typed, validated outputs</li>
+      </ul>
+      <div class="chips"><span class="chip navy">6 agent roles</span><span class="chip">pydantic-ai</span><span class="chip">~1.5 s / call</span></div>
+    </div>
+  </div>
+</section>
+
 <!-- 7. COST -->
 <section>
   <h2>A full game costs about 2¢; 10,000 students cost under $1,000 a month</h2>
   <div class="grid4">
-    <div class="stat"><b>42.6K</b><span>tokens per Door 1 game (measured)</span></div>
+    <div class="stat"><b>42.6K</b><span>tokens per Game 1 playthrough (measured)</span></div>
     <div class="stat"><b>2% → 61%</b><span>of input now cached (prompt caching)</span></div>
-    <div class="stat"><b>$0.02</b><span>per Door 1 game · Door 3 ≈ $0.004</span></div>
+    <div class="stat"><b>$0.02</b><span>per Game 1 playthrough · Game 3 ≈ $0.004</span></div>
     <div class="stat"><b>≤ $0.28</b><span>hard cap per session (50 AI calls)</span></div>
   </div>
   <div class="grid3" style="margin-top:18px">
@@ -226,7 +226,7 @@
 
 <!-- 10. NEXT -->
 <section>
-  <h2>Next: a teacher dashboard and a more game-like Door 3</h2>
+  <h2>Next: a teacher dashboard and a more gamified Game 3</h2>
   <div class="grid2" style="align-items:stretch">
     <div class="card">
       <h3>1 · Teacher dashboard <span class="mock">· mockup</span></h3>
@@ -237,10 +237,10 @@
       <p>Per student: before → after, time, questions asked. A class code instead of accounts.</p>
     </div>
     <div class="card">
-      <h3>2 · Gamify Door 3</h3>
-      <p style="margin-bottom:10px">Give bargaining the same buzz as Door 1.</p>
+      <h3>2 · Gamify Game 3</h3>
+      <p style="margin-bottom:10px">Give bargaining the same buzz as Game 1.</p>
       <div class="badge-row"><span class="chip">🏆 GPU leaderboard</span><span class="chip">📈 trust meter</span><span class="chip">🤝 Fair Dealer</span><span class="chip">🦈 Shark</span><span class="chip">🔁 Backward Inductor</span><span class="chip">🚆 train-delay twist</span><span class="chip">🔮 predict his answer</span></div>
-      <p style="margin-top:14px">Then: a class pilot with a control group, and Door 2 (Stag Hunt).</p>
+      <p style="margin-top:14px">Then: a class pilot with a control group, and Game 2 (Stag Hunt).</p>
     </div>
   </div>
   <p class="big" style="text-align:center; margin-top:18px">Play it. Build it. Name it. <span style="color:var(--purple-deep)">That's how game theory sticks.</span></p>
